@@ -347,6 +347,14 @@ fn quality_term_uses_quality_context_without_flagging_mass() {
         .expect("質量 in quality context should be flagged");
     assert_eq!(issue.suggestions[0], "品質");
 
+    let out = scanner.scan("這水果質量真好");
+    let issue = out
+        .issues
+        .iter()
+        .find(|issue| issue.found == "質量")
+        .expect("質量 with 真好 should be flagged");
+    assert_eq!(issue.suggestions[0], "品質");
+
     let out = scanner.scan("這個粒子的質量很大");
     assert!(!out.issues.iter().any(|issue| issue.found == "質量"));
 }
