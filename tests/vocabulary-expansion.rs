@@ -169,6 +169,21 @@ fn existing_it_rules_still_fire() {
 }
 
 #[test]
+fn hackathon_is_not_misread_as_hacker() {
+    let scanner = full_scanner();
+    assert!(scanner
+        .scan("黑客")
+        .issues
+        .iter()
+        .any(|i| i.found == "黑客"));
+    assert!(scanner
+        .scan("黑客松")
+        .issues
+        .iter()
+        .all(|i| i.found != "黑客"));
+}
+
+#[test]
 fn current_ai_product_and_protocol_names_use_canonical_case() {
     let scanner = full_scanner();
     let cases = [

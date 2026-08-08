@@ -13280,7 +13280,8 @@
       "to": ["駭客"],
       "type": "cross_strait",
       "context": "@domain IT。指電腦技術高人一等者，並非蓄意破壞 (cracker)",
-      "english": "hacker"
+      "english": "hacker",
+      "exceptions": ["黑客松"]
     },
     {
       "from": "黑帽",
