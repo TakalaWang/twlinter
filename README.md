@@ -73,7 +73,8 @@ channel administration.
 
 ## Quick start
 
-Requires stable Rust 1.91 or newer.
+Requires stable Rust 1.91 or newer, Python 3, and Make. The supported
+development workflow uses `rustup` and Make; Nix and direnv are not required.
 
 ```bash
 git clone https://github.com/TakalaWang/twlinter.git
