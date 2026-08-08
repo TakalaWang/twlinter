@@ -181,3 +181,6 @@ TWLinter is released under the [MIT License](LICENSE).
 
 The project is derived from [sysprog21/zhtw-mcp](https://github.com/sysprog21/zhtw-mcp);
 please retain that attribution when redistributing the copied ruleset and engine.
+
+The built-in SC→TC dictionary data is derived from [OpenCC](https://github.com/BYVoid/OpenCC)
+and is licensed under Apache-2.0. See [third-party notices](THIRD-PARTY-NOTICES.md).
