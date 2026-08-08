@@ -7,9 +7,9 @@
 
 use std::path::{Path, PathBuf};
 
-use zhtw_mcp::engine::scan::{ContentType, Scanner};
-use zhtw_mcp::rules::loader::load_embedded_ruleset;
-use zhtw_mcp::rules::ruleset::{Issue, IssueType, Profile};
+use zhtw_core::engine::scan::{ContentType, Scanner};
+use zhtw_core::rules::loader::load_embedded_ruleset;
+use zhtw_core::rules::ruleset::{Issue, IssueType, Profile};
 
 fn fixture_path() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))

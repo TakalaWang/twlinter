@@ -1,9 +1,9 @@
 use serde::Deserialize;
-use zhtw_mcp::engine::s2t::S2TConverter;
-use zhtw_mcp::engine::scan::{ContentType, Scanner};
-use zhtw_mcp::engine::segment::Segmenter;
-use zhtw_mcp::fixer::{apply_fixes_with_context, FixMode};
-use zhtw_mcp::rules::ruleset::{Issue, IssueType, Profile, ProfileConfig, Ruleset};
+use zhtw_core::engine::s2t::S2TConverter;
+use zhtw_core::engine::scan::{ContentType, Scanner};
+use zhtw_core::engine::segment::Segmenter;
+use zhtw_core::fixer::{apply_fixes_with_context, FixMode};
+use zhtw_core::rules::ruleset::{Issue, IssueType, Profile, ProfileConfig, Ruleset};
 
 #[derive(Debug, Deserialize)]
 struct CorpusSpec {

@@ -4,13 +4,13 @@
 // where possible, sending only genuine gray-zone ambiguity to Tier 3 (LLM).
 // No user configuration needed — the system dynamically handles the tradeoff.
 
-use zhtw_mcp::engine::disambig::{disambiguate_batch, DisambigConfig, DisambigStats};
-use zhtw_mcp::engine::s2t::S2TConverter;
-use zhtw_mcp::engine::scan::{ContentType, Scanner};
-use zhtw_mcp::rules::ruleset::Profile;
+use zhtw_core::engine::disambig::{disambiguate_batch, DisambigConfig, DisambigStats};
+use zhtw_core::engine::s2t::S2TConverter;
+use zhtw_core::engine::scan::{ContentType, Scanner};
+use zhtw_core::rules::ruleset::Profile;
 
 fn load_scanner() -> (Scanner, S2TConverter) {
-    let ruleset = zhtw_mcp::rules::loader::load_embedded_ruleset().unwrap();
+    let ruleset = zhtw_core::rules::loader::load_embedded_ruleset().unwrap();
     let scanner = Scanner::new(ruleset.spelling_rules, ruleset.case_rules);
     (scanner, S2TConverter::new())
 }
@@ -51,8 +51,8 @@ fn evaluate_texts(
     let mut agg = DisambigStats::default();
 
     for text in texts {
-        let converted = if zhtw_mcp::engine::zhtype::detect_chinese_type(text)
-            == zhtw_mcp::engine::zhtype::ChineseType::Simplified
+        let converted = if zhtw_core::engine::zhtype::detect_chinese_type(text)
+            == zhtw_core::engine::zhtype::ChineseType::Simplified
         {
             Some(s2t.convert(text))
         } else {

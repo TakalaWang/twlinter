@@ -23,7 +23,7 @@ check: $(S2T_DATA)
 	python3 scripts/check-ruleset.py --lint
 
 check-size: all
-	@SIZE=$$(wc -c < target/release/zhtw-mcp | tr -d ' '); \
+	@SIZE=$$(wc -c < target/release/zhtw-core | tr -d ' '); \
 	MAX=20971520; \
 	if [ "$$SIZE" -gt "$$MAX" ]; then \
 		echo "FAIL: release binary $$SIZE bytes exceeds 20 MiB budget ($$MAX)"; \
@@ -41,13 +41,4 @@ indent: $(S2T_DATA)
 corpus: $(S2T_DATA)
 	cargo test --test corpus-evaluation -- --nocapture
 
-.PHONY: all clean distclean check check-size corpus indent install uninstall status
-
-install: all
-	@./scripts/deploy.sh install
-
-uninstall:
-	@./scripts/deploy.sh uninstall
-
-status:
-	@./scripts/deploy.sh status
+.PHONY: all clean distclean check check-size corpus indent

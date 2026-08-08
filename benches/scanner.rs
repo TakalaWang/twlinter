@@ -1,4 +1,4 @@
-// Criterion benchmarks for zhtw-mcp scanning pipeline.
+// Criterion benchmarks for zhtw-core scanning pipeline.
 //
 // Covers the benchmark targets:
 //   1. Scanner construction (Aho-Corasick automaton build, clone-free)
@@ -13,12 +13,12 @@
 
 use criterion::{black_box, criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion};
 
-use zhtw_mcp::engine::markdown::build_markdown_excluded_ranges;
-use zhtw_mcp::engine::scan::Scanner;
-use zhtw_mcp::engine::segment::Segmenter;
-use zhtw_mcp::fixer::{apply_fixes_with_context, FixMode};
-use zhtw_mcp::rules::loader::load_embedded_ruleset;
-use zhtw_mcp::rules::ruleset::Profile;
+use zhtw_core::engine::markdown::build_markdown_excluded_ranges;
+use zhtw_core::engine::scan::Scanner;
+use zhtw_core::engine::segment::Segmenter;
+use zhtw_core::fixer::{apply_fixes_with_context, FixMode};
+use zhtw_core::rules::loader::load_embedded_ruleset;
+use zhtw_core::rules::ruleset::Profile;
 
 // Test data generation
 
@@ -341,9 +341,9 @@ fn bench_segmenter(c: &mut Criterion) {
 fn bench_post_scan_transforms(c: &mut Criterion) {
     use rustc_hash::FxHashMap;
     use std::collections::HashSet;
-    use zhtw_mcp::fixer::remap_to_post_fix;
-    use zhtw_mcp::fixer::AppliedFix;
-    use zhtw_mcp::rules::ruleset::{Issue, IssueType, Severity};
+    use zhtw_core::fixer::remap_to_post_fix;
+    use zhtw_core::fixer::AppliedFix;
+    use zhtw_core::rules::ruleset::{Issue, IssueType, Severity};
 
     // Simulate post-scan transform workload at three issue counts.
     let issue_counts: &[(usize, &str)] = &[(100, "100"), (500, "500"), (1000, "1000")];
@@ -444,9 +444,9 @@ fn bench_post_scan_transforms(c: &mut Criterion) {
 // (e.g. spelling_only).
 
 fn bench_cpu_attribution_100kb(c: &mut Criterion) {
-    use zhtw_mcp::engine::scan::ContentType;
-    use zhtw_mcp::engine::zhtype::detect_chinese_type;
-    use zhtw_mcp::rules::ruleset::{PoliticalStance, ProfileConfig};
+    use zhtw_core::engine::scan::ContentType;
+    use zhtw_core::engine::zhtype::detect_chinese_type;
+    use zhtw_core::rules::ruleset::{PoliticalStance, ProfileConfig};
 
     let ruleset = load_embedded_ruleset().expect("load embedded ruleset");
     let scanner = Scanner::new(ruleset.spelling_rules, ruleset.case_rules);
@@ -454,7 +454,7 @@ fn bench_cpu_attribution_100kb(c: &mut Criterion) {
 
     // Pre-build excluded ranges once (shared across stage benchmarks).
     let excluded =
-        zhtw_mcp::engine::scan::build_exclusions_for_content_type(&text, ContentType::Plain);
+        zhtw_core::engine::scan::build_exclusions_for_content_type(&text, ContentType::Plain);
 
     // All-off config: measures baseline overhead (detect_chinese_type +
     // vec alloc + sort).  LineIndex is skipped (early-return on 0 issues).
@@ -472,7 +472,7 @@ fn bench_cpu_attribution_100kb(c: &mut Criterion) {
         ai_filler_detection: false,
         translationese_detection: false,
         translationese_domain:
-            zhtw_mcp::engine::translationese_score::TranslationeseDomain::General,
+            zhtw_core::engine::translationese_score::TranslationeseDomain::General,
         ai_semantic_safety: false,
         ai_density_detection: false,
         ai_structural_patterns: false,
@@ -528,7 +528,7 @@ fn bench_cpu_attribution_100kb(c: &mut Criterion) {
     // Stage 0b: build exclusion ranges.
     group.bench_function("build_exclusions_plain", |b| {
         b.iter(|| {
-            let e = zhtw_mcp::engine::scan::build_exclusions_for_content_type(
+            let e = zhtw_core::engine::scan::build_exclusions_for_content_type(
                 black_box(&text),
                 ContentType::Plain,
             );
@@ -589,7 +589,7 @@ fn bench_cpu_attribution_100kb(c: &mut Criterion) {
     // This cost is hidden inside spelling_only (which produces issues)
     // but absent from baseline_no_checks (which early-returns on 0 issues).
     group.bench_function("lineindex_100kb", |b| {
-        use zhtw_mcp::engine::lineindex::{ColumnEncoding, LineIndex};
+        use zhtw_core::engine::lineindex::{ColumnEncoding, LineIndex};
         // Pre-collect valid char-boundary offsets for lookup simulation.
         let offsets: Vec<usize> = text
             .char_indices()
@@ -627,7 +627,7 @@ fn bench_cpu_attribution_100kb(c: &mut Criterion) {
     group.bench_function("build_exclusions_markdown", |b| {
         let md = generate_markdown(102_400);
         b.iter(|| {
-            let e = zhtw_mcp::engine::scan::build_exclusions_for_content_type(
+            let e = zhtw_core::engine::scan::build_exclusions_for_content_type(
                 black_box(&md),
                 ContentType::Markdown,
             );
@@ -694,14 +694,14 @@ fn bench_pipeline_breakdown(c: &mut Criterion) {
     });
 
     // Stage E: line/col fill on sorted issues.
-    let line_index = zhtw_mcp::engine::lineindex::LineIndex::new(&text);
+    let line_index = zhtw_core::engine::lineindex::LineIndex::new(&text);
     group.bench_function("fill_line_col", |b| {
         b.iter_batched(
             || raw_issues.clone(),
             |mut issues| {
                 line_index.fill_line_col_sorted(
                     &mut issues,
-                    zhtw_mcp::engine::lineindex::ColumnEncoding::Utf16,
+                    zhtw_core::engine::lineindex::ColumnEncoding::Utf16,
                 );
                 black_box(&issues);
             },
@@ -712,8 +712,8 @@ fn bench_pipeline_breakdown(c: &mut Criterion) {
     // Stage F: detect_type + build_line_index (fused pass).
     group.bench_function("detect_and_lineindex", |b| {
         b.iter(|| {
-            let zh = zhtw_mcp::engine::zhtype::detect_chinese_type(black_box(&text));
-            let idx = zhtw_mcp::engine::lineindex::LineIndex::new(black_box(&text));
+            let zh = zhtw_core::engine::zhtype::detect_chinese_type(black_box(&text));
+            let idx = zhtw_core::engine::lineindex::LineIndex::new(black_box(&text));
             black_box(zh);
             black_box(&idx);
         });

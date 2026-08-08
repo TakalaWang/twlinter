@@ -8,11 +8,11 @@
 // D. Mixed-content: markdown, code blocks, CJK-Latin interleaving.
 
 use serde::Deserialize;
-use zhtw_mcp::engine::disambig::{disambiguate_batch, DisambigConfig};
-use zhtw_mcp::engine::s2t::S2TConverter;
-use zhtw_mcp::engine::scan::{ContentType, Scanner};
-use zhtw_mcp::fixer::{apply_fixes_with_context, FixMode};
-use zhtw_mcp::rules::ruleset::{Issue, IssueType, Profile};
+use zhtw_core::engine::disambig::{disambiguate_batch, DisambigConfig};
+use zhtw_core::engine::s2t::S2TConverter;
+use zhtw_core::engine::scan::{ContentType, Scanner};
+use zhtw_core::fixer::{apply_fixes_with_context, FixMode};
+use zhtw_core::rules::ruleset::{Issue, IssueType, Profile};
 
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
@@ -70,14 +70,14 @@ fn parse_issue_type(name: &str) -> IssueType {
 }
 
 fn load_scanner() -> (Scanner, S2TConverter) {
-    let ruleset = zhtw_mcp::rules::loader::load_embedded_ruleset().unwrap();
+    let ruleset = zhtw_core::rules::loader::load_embedded_ruleset().unwrap();
     let scanner = Scanner::new(ruleset.spelling_rules, ruleset.case_rules);
     (scanner, S2TConverter::new())
 }
 
 fn working_text<'a>(s2t: &'a S2TConverter, text: &'a str) -> std::borrow::Cow<'a, str> {
-    if zhtw_mcp::engine::zhtype::detect_chinese_type(text)
-        == zhtw_mcp::engine::zhtype::ChineseType::Simplified
+    if zhtw_core::engine::zhtype::detect_chinese_type(text)
+        == zhtw_core::engine::zhtype::ChineseType::Simplified
     {
         std::borrow::Cow::Owned(s2t.convert(text))
     } else {
@@ -117,7 +117,7 @@ fn scan_and_fix(
 
     // Apply fixes.
     let excluded =
-        zhtw_mcp::engine::scan::build_exclusions_for_content_type(work_text, content_type);
+        zhtw_core::engine::scan::build_exclusions_for_content_type(work_text, content_type);
     let excluded_pairs: Vec<(usize, usize)> = excluded.iter().map(|r| (r.start, r.end)).collect();
     let fix_result = apply_fixes_with_context(
         work_text,
@@ -194,7 +194,7 @@ fn deterministic_corpus_stable_output() {
         // No residual issues above Info on already-fixed text.
         let active: Vec<_> = issues2
             .iter()
-            .filter(|i| i.severity != zhtw_mcp::rules::ruleset::Severity::Info)
+            .filter(|i| i.severity != zhtw_core::rules::ruleset::Severity::Info)
             .collect();
         assert!(
             active.is_empty(),
@@ -227,7 +227,7 @@ fn ambiguous_corpus_basic_validation() {
 
         let active: Vec<_> = issues
             .iter()
-            .filter(|i| i.severity != zhtw_mcp::rules::ruleset::Severity::Info)
+            .filter(|i| i.severity != zhtw_core::rules::ruleset::Severity::Info)
             .collect();
 
         if case.expected_issues.is_empty() {

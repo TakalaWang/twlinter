@@ -52,24 +52,21 @@ fn main() -> Result<()> {
     } else {
         "warn"
     };
-    zhtw_mcp::trace::init(default_log);
+    zhtw_core::trace::init(default_log);
 
     // Parse CLI args:
-    //   zhtw-mcp                                — run MCP server (default paths)
-    //   zhtw-mcp --overrides <path>             — custom overrides JSON path
-    //   zhtw-mcp --suppressions <path>          — custom suppressions JSON path
-    //   zhtw-mcp --pack <name>                  — activate a rule pack (repeatable)
-    //   zhtw-mcp lint <file|--> [--format json|compact]  — lint file(s) or stdin
+    //   zhtw-core --overrides <path>             — custom overrides JSON path
+    //   zhtw-core --suppressions <path>          — custom suppressions JSON path
+    //   zhtw-core --pack <name>                  — activate a rule pack (repeatable)
+    //   zhtw-core lint <file|--> [--format json|compact]  — lint file(s) or stdin
     //                           [--max-errors N]
     //                           [--profile P] [--detect-ai]
     //                           [--content-type plain|markdown|yaml]
-    //   zhtw-mcp setup <host>                   — generate agentic editor integration config
-    //   zhtw-mcp pack import <file>             — install a pack
-    //   zhtw-mcp pack export <name>             — export a pack
-    //   zhtw-mcp pack validate <file>           — validate a pack file
-    //   zhtw-mcp pack list                      — list available packs
+    //   zhtw-core pack import <file>             — install a pack
+    //   zhtw-core pack export <name>             — export a pack
+    //   zhtw-core pack validate <file>           — validate a pack file
+    //   zhtw-core pack list                      — list available packs
     let mut overrides_path: Option<PathBuf> = None;
-    let mut suppressions_path: Option<PathBuf> = None;
     let mut packs_dir: Option<PathBuf> = None;
     let mut active_packs: Vec<String> = Vec::new();
     let mut lint_files: Vec<String> = Vec::new();
@@ -80,7 +77,7 @@ fn main() -> Result<()> {
     let mut content_type_str: Option<String> = None;
     let mut exclude_patterns: Vec<String> = Vec::new();
     let mut config_path: Option<PathBuf> = None;
-    let mut fix_mode: Option<zhtw_mcp::fixer::FixMode> = None;
+    let mut fix_mode: Option<zhtw_core::fixer::FixMode> = None;
     let mut dry_run = false;
     let mut explain = false;
     let mut relaxed = false;
@@ -92,7 +89,7 @@ fn main() -> Result<()> {
     // (set alongside detect_ai + detect_translationese in that arm).
     let mut detect_style = false;
     let mut translationese_domain =
-        zhtw_mcp::engine::translationese_score::TranslationeseDomain::General;
+        zhtw_core::engine::translationese_score::TranslationeseDomain::General;
     let mut ai_threshold_multiplier: f32 = 1.0;
     let mut baseline_path: Option<PathBuf> = None;
     let mut update_baseline = false;
@@ -100,7 +97,6 @@ fn main() -> Result<()> {
     #[cfg(feature = "translate")]
     let mut verify = false;
     let mut telemetry = false;
-    let mut setup_host: Option<String> = None;
     let mut pack_cmd: Option<String> = None;
     let mut pack_arg: Option<String> = None;
     let mut tm_cmd: Option<String> = None;
@@ -198,13 +194,13 @@ fn main() -> Result<()> {
                                 .push(args.get(i).context("--exclude requires a pattern")?.clone());
                         }
                         "--fix" | "--fix=lexical_safe" => {
-                            fix_mode = Some(zhtw_mcp::fixer::FixMode::LexicalSafe);
+                            fix_mode = Some(zhtw_core::fixer::FixMode::LexicalSafe);
                         }
                         "--fix=orthographic" => {
-                            fix_mode = Some(zhtw_mcp::fixer::FixMode::Orthographic);
+                            fix_mode = Some(zhtw_core::fixer::FixMode::Orthographic);
                         }
                         "--fix=lexical_contextual" => {
-                            fix_mode = Some(zhtw_mcp::fixer::FixMode::LexicalContextual);
+                            fix_mode = Some(zhtw_core::fixer::FixMode::LexicalContextual);
                         }
                         arg if arg.starts_with("--fix=") => {
                             anyhow::bail!(
@@ -264,7 +260,7 @@ fn main() -> Result<()> {
                             // translationese score: general | technical |
                             // literary | news.
                             if let Some(next) = args.get(i + 1) {
-                                match zhtw_mcp::engine::translationese_score::TranslationeseDomain::from_str_strict(next) {
+                                match zhtw_core::engine::translationese_score::TranslationeseDomain::from_str_strict(next) {
                                     Some(d) => {
                                         translationese_domain = d;
                                         i += 1;
@@ -330,12 +326,8 @@ fn main() -> Result<()> {
                     anyhow::bail!("lint requires at least one file path or '--' for stdin");
                 }
             }
-            "setup" => {
-                i += 1;
-                setup_host = Some(args.get(i).context("setup requires a host name")?.clone());
-            }
             "convert" => {
-                // convert subcommand: SC→TW pipeline (built-in s2t + zhtw-mcp fix).
+                // convert subcommand: SC→TW pipeline (built-in s2t + zhtw-core fix).
                 // Reads SC text from files or stdin, outputs corrected zh-TW.
                 i += 1;
                 let mut convert_files: Vec<String> = Vec::new();
@@ -368,7 +360,7 @@ fn main() -> Result<()> {
                 return run_convert(
                     &convert_files,
                     convert_content_type.as_deref(),
-                    overrides_path.unwrap_or_else(zhtw_mcp::rules::store::default_overrides_path),
+                    overrides_path.unwrap_or_else(zhtw_core::rules::store::default_overrides_path),
                 );
             }
             "tm" => {
@@ -452,37 +444,6 @@ fn main() -> Result<()> {
                 }
                 pack_cmd = Some(subcmd);
             }
-            "cache" => {
-                i += 1;
-                let subcmd = args
-                    .get(i)
-                    .context("cache requires a subcommand (clear)")?
-                    .clone();
-                match subcmd.as_str() {
-                    "clear" => {
-                        if i + 1 < args.len() {
-                            anyhow::bail!(
-                                "cache clear does not accept additional arguments: {}",
-                                args[i + 1]
-                            );
-                        }
-                        let mut cache =
-                            zhtw_mcp::rules::judgment_cache::JudgmentCache::open_default();
-                        let count = cache.len();
-                        cache.clear();
-                        cache.flush();
-                        eprintln!("judgment cache cleared ({count} entries removed)");
-                        return Ok(());
-                    }
-                    other => anyhow::bail!("unknown cache subcommand: {other} (expected 'clear')"),
-                }
-            }
-            "--suppressions" => {
-                i += 1;
-                suppressions_path = Some(PathBuf::from(
-                    args.get(i).context("--suppressions requires a path")?,
-                ));
-            }
             "--config" => {
                 i += 1;
                 config_path = Some(PathBuf::from(
@@ -498,29 +459,21 @@ fn main() -> Result<()> {
         i += 1;
     }
 
-    let packs_dir = packs_dir.unwrap_or_else(zhtw_mcp::rules::store::default_packs_dir);
-
-    // Setup subcommand: generate integration config for a host editor.
-    if let Some(ref host_str) = setup_host {
-        if host_str == "translation-guide" || host_str == "translation_guide" {
-            return run_translation_guide();
-        }
-        return run_setup(host_str);
-    }
+    let packs_dir = packs_dir.unwrap_or_else(zhtw_core::rules::store::default_packs_dir);
 
     // TM subcommand: manage translation memory.
-    // Respect .zhtw-mcp.toml translation_memory override so `tm record`
+    // Respect .zhtw-core.toml translation_memory override so `tm record`
     // writes to the same file that `lint` reads.
     if let Some(cmd) = tm_cmd {
         let cwd = std::env::current_dir().unwrap_or_default();
         let project_cfg = match &config_path {
-            Some(p) => zhtw_mcp::config::ProjectConfig::from_file(p).ok(),
-            None => zhtw_mcp::config::ProjectConfig::discover(&cwd),
+            Some(p) => zhtw_core::config::ProjectConfig::from_file(p).ok(),
+            None => zhtw_core::config::ProjectConfig::discover(&cwd),
         };
         let tm_path = project_cfg
             .as_ref()
             .and_then(|c| c.translation_memory.as_ref().map(PathBuf::from))
-            .unwrap_or_else(|| zhtw_mcp::rules::store::discover_tm_path(&cwd));
+            .unwrap_or_else(|| zhtw_core::rules::store::discover_tm_path(&cwd));
         return run_tm_cmd(
             &cmd,
             tm_arg.as_deref(),
@@ -541,10 +494,10 @@ fn main() -> Result<()> {
     if !lint_files.is_empty() {
         // Load project config: explicit --config > auto-discover from cwd.
         let project_cfg = match &config_path {
-            Some(p) => Some(zhtw_mcp::config::ProjectConfig::from_file(p)?),
+            Some(p) => Some(zhtw_core::config::ProjectConfig::from_file(p)?),
             None => {
                 let cwd = std::env::current_dir().unwrap_or_default();
-                zhtw_mcp::config::ProjectConfig::discover(&cwd)
+                zhtw_core::config::ProjectConfig::discover(&cwd)
             }
         };
 
@@ -552,7 +505,7 @@ fn main() -> Result<()> {
         let cfg_ref = project_cfg.as_ref();
         let eff_overrides = overrides_path
             .or_else(|| cfg_ref.and_then(|c| c.overrides.as_ref().map(PathBuf::from)))
-            .unwrap_or_else(zhtw_mcp::rules::store::default_overrides_path);
+            .unwrap_or_else(zhtw_core::rules::store::default_overrides_path);
         let eff_profile = profile_str
             .as_deref()
             .or_else(|| cfg_ref.and_then(|c| c.profile.as_deref()));
@@ -595,13 +548,13 @@ fn main() -> Result<()> {
             .and_then(|c| c.translation_memory.as_ref().map(PathBuf::from))
             .unwrap_or_else(|| {
                 let cwd = std::env::current_dir().unwrap_or_default();
-                zhtw_mcp::rules::store::discover_tm_path(&cwd)
+                zhtw_core::rules::store::discover_tm_path(&cwd)
             });
 
         // Build project glossary from `[glossary]` section.
         let eff_glossary = cfg_ref
             .and_then(|c| c.glossary.as_ref())
-            .map(|g| zhtw_mcp::rules::glossary::ProjectGlossary {
+            .map(|g| zhtw_core::rules::glossary::ProjectGlossary {
                 banned: g.banned.clone().unwrap_or_default(),
                 preferred: g.preferred.clone().unwrap_or_default(),
                 proper_nouns: g.proper_nouns.clone().unwrap_or_default(),
@@ -623,7 +576,7 @@ fn main() -> Result<()> {
             packs_dir: &packs_dir,
             active_packs: &active_packs,
             exclude_patterns: &exclude_patterns,
-            fix_mode: fix_mode.unwrap_or(zhtw_mcp::fixer::FixMode::None),
+            fix_mode: fix_mode.unwrap_or(zhtw_core::fixer::FixMode::None),
             dry_run,
             explain,
             baseline_path: baseline_path.as_deref(),
@@ -650,45 +603,7 @@ fn main() -> Result<()> {
         anyhow::bail!("--content-type is only valid with the 'lint' subcommand");
     }
 
-    // Server mode: open override store, then run MCP over stdio.
-    let overrides_path =
-        overrides_path.unwrap_or_else(zhtw_mcp::rules::store::default_overrides_path);
-
-    let suppressions_path =
-        suppressions_path.unwrap_or_else(zhtw_mcp::rules::store::default_suppressions_path);
-    let store = zhtw_mcp::rules::store::OverrideStore::open(&overrides_path)?;
-    let suppression_store = zhtw_mcp::rules::store::SuppressionStore::open(&suppressions_path)?;
-    let pack_store = zhtw_mcp::rules::store::PackStore::new(packs_dir);
-
-    // Discover translation memory in project root.
-    let tm_store = {
-        let cwd = std::env::current_dir().unwrap_or_default();
-        let tm_path = zhtw_mcp::rules::store::discover_tm_path(&cwd);
-        match zhtw_mcp::rules::store::TranslationMemoryStore::open(&tm_path) {
-            Ok(store) => Some(store),
-            Err(e) => {
-                tracing::warn!(
-                    "failed to open translation memory at {}: {e}",
-                    tm_path.display()
-                );
-                None
-            }
-        }
-    };
-
-    let mut server = zhtw_mcp::mcp::tools::Server::new(
-        store,
-        suppression_store,
-        pack_store,
-        active_packs,
-        tm_store,
-    )?;
-
-    tracing::info!("zhtw-mcp server starting on stdio");
-
-    zhtw_mcp::mcp::transport::run_stdio(&mut server)?;
-
-    Ok(())
+    anyhow::bail!("a command is required: use 'lint', 'convert', 'pack', or 'tm'")
 }
 
 // Lint subcommand
@@ -708,7 +623,7 @@ enum LintFormat {
 struct CliFileOutput {
     file: String,
     detected_script: String,
-    issues: Vec<zhtw_mcp::rules::ruleset::Issue>,
+    issues: Vec<zhtw_core::rules::ruleset::Issue>,
     total: usize,
     errors: usize,
     warnings: usize,
@@ -719,18 +634,18 @@ struct CliFileOutput {
     #[serde(skip_serializing_if = "Option::is_none")]
     fixes_skipped: Option<usize>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    ai_signature: Option<zhtw_mcp::engine::ai_score::AiSignatureReport>,
+    ai_signature: Option<zhtw_core::engine::ai_score::AiSignatureReport>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    translationese_signature: Option<zhtw_mcp::engine::translationese_score::TranslationeseReport>,
+    translationese_signature: Option<zhtw_core::engine::translationese_score::TranslationeseReport>,
     /// Composite style scorecard.  Three orthogonal axes, never
     /// collapsed into a single number.  Present only when --detect-style
     /// is active.
     #[serde(skip_serializing_if = "Option::is_none")]
-    style_scorecard: Option<zhtw_mcp::engine::style_score::StyleScorecard>,
+    style_scorecard: Option<zhtw_core::engine::style_score::StyleScorecard>,
     /// Document-wide consistency report (35.1).  Present only when
     /// --consistency is set AND mixed regional usage is detected.
     #[serde(skip_serializing_if = "Option::is_none")]
-    consistency: Option<zhtw_mcp::engine::consistency::ConsistencyReport>,
+    consistency: Option<zhtw_core::engine::consistency::ConsistencyReport>,
 }
 
 #[derive(serde::Serialize)]
@@ -822,7 +737,7 @@ struct LintBatchParams<'a> {
     packs_dir: &'a Path,
     active_packs: &'a [String],
     exclude_patterns: &'a [String],
-    fix_mode: zhtw_mcp::fixer::FixMode,
+    fix_mode: zhtw_core::fixer::FixMode,
     dry_run: bool,
     explain: bool,
     baseline_path: Option<&'a Path>,
@@ -839,14 +754,14 @@ struct LintBatchParams<'a> {
     /// `--detect-style` (which also flips detect_ai +
     /// detect_translationese).
     detect_style: bool,
-    translationese_domain: zhtw_mcp::engine::translationese_score::TranslationeseDomain,
+    translationese_domain: zhtw_core::engine::translationese_score::TranslationeseDomain,
     ai_threshold_multiplier: f32,
     tm_path: Option<PathBuf>,
-    /// Project glossary (`[glossary]` section in `.zhtw-mcp.toml`).
+    /// Project glossary (`[glossary]` section in `.zhtw-core.toml`).
     /// Applied as a post-scan step: `proper_nouns` suppress matching
     /// issues, `banned` injects synthetic Error issues for any
     /// occurrence the embedded ruleset missed.
-    glossary: zhtw_mcp::rules::glossary::ProjectGlossary,
+    glossary: zhtw_core::rules::glossary::ProjectGlossary,
     /// When true, append a `consistency` block to JSON output (35.1):
     /// per-equivalence-class diagnostic when both the calque and the
     /// canonical TW form appear in the same document.
@@ -875,8 +790,8 @@ fn display_path_prefix(file_arg: &str) -> String {
 
 /// Join suggestions for display, rendering the delete case as `(delete)`.
 fn format_suggestions(suggestions: &[String]) -> String {
-    if zhtw_mcp::rules::ruleset::is_delete_suggestion(suggestions) {
-        zhtw_mcp::rules::ruleset::DELETE_SUGGESTION.to_string()
+    if zhtw_core::rules::ruleset::is_delete_suggestion(suggestions) {
+        zhtw_core::rules::ruleset::DELETE_SUGGESTION.to_string()
     } else {
         suggestions.join(", ")
     }
@@ -886,15 +801,15 @@ fn format_suggestions(suggestions: &[String]) -> String {
 struct FileReport<'a> {
     file_arg: &'a str,
     detected_script: &'a str,
-    issues: &'a [zhtw_mcp::rules::ruleset::Issue],
+    issues: &'a [zhtw_core::rules::ruleset::Issue],
     error_count: usize,
     warning_count: usize,
     tm_suppressed: usize,
     fixes_applied: Option<usize>,
     fixes_skipped: Option<usize>,
-    ai_signature: Option<&'a zhtw_mcp::engine::ai_score::AiSignatureReport>,
+    ai_signature: Option<&'a zhtw_core::engine::ai_score::AiSignatureReport>,
     translationese_signature:
-        Option<&'a zhtw_mcp::engine::translationese_score::TranslationeseReport>,
+        Option<&'a zhtw_core::engine::translationese_score::TranslationeseReport>,
     /// Text the consistency report should run against: post-fix when fixes
     /// were written, original otherwise.
     consistency_text: &'a str,
@@ -917,7 +832,7 @@ fn render_json(r: &FileReport<'_>, params: &LintBatchParams<'_>) -> CliFileOutpu
         ai_signature: r.ai_signature.cloned(),
         translationese_signature: r.translationese_signature.cloned(),
         style_scorecard: params.detect_style.then(|| {
-            zhtw_mcp::engine::style_score::StyleScorecard::build(
+            zhtw_core::engine::style_score::StyleScorecard::build(
                 r.ai_signature,
                 r.translationese_signature,
                 r.issues,
@@ -927,7 +842,7 @@ fn render_json(r: &FileReport<'_>, params: &LintBatchParams<'_>) -> CliFileOutpu
         consistency: params
             .consistency
             .then(|| {
-                zhtw_mcp::engine::consistency::compute_consistency_report(
+                zhtw_core::engine::consistency::compute_consistency_report(
                     r.consistency_text,
                     r.issues,
                     &params.glossary,
@@ -949,9 +864,9 @@ fn render_human(r: &FileReport<'_>, params: &LintBatchParams<'_>, c: &Colors) {
     } else {
         for issue in r.issues {
             let sev_color = match issue.severity {
-                zhtw_mcp::rules::ruleset::Severity::Error => c.red,
-                zhtw_mcp::rules::ruleset::Severity::Warning => c.yellow,
-                zhtw_mcp::rules::ruleset::Severity::Info => c.cyan,
+                zhtw_core::rules::ruleset::Severity::Error => c.red,
+                zhtw_core::rules::ruleset::Severity::Warning => c.yellow,
+                zhtw_core::rules::ruleset::Severity::Info => c.cyan,
             };
             let verify_tag = match issue.anchor_match {
                 Some(true) => " [verified]",
@@ -1094,7 +1009,7 @@ fn render_compact(r: &FileReport<'_>, explain: bool) {
 /// across files so the header appears exactly once per run.
 fn render_tabular(r: &FileReport<'_>, explain: bool, header_printed: &mut bool) {
     use std::fmt::Write as FmtWrite;
-    use zhtw_mcp::mcp::tools::{
+    use zhtw_core::report::{
         compress_locations, escape_tsv_field, group_issues, shorten_severity, shorten_type,
     };
 
@@ -1117,8 +1032,8 @@ fn render_tabular(r: &FileReport<'_>, explain: bool, header_printed: &mut bool) 
     for ((found, rt, _, sev), group) in &groups {
         // Cannot reuse format_suggestions: each entry is TSV-escaped before
         // joining. Only the delete-sentinel predicate is shared.
-        let sug_str = if zhtw_mcp::rules::ruleset::is_delete_suggestion(&group.suggestions) {
-            zhtw_mcp::rules::ruleset::DELETE_SUGGESTION.to_string()
+        let sug_str = if zhtw_core::rules::ruleset::is_delete_suggestion(&group.suggestions) {
+            zhtw_core::rules::ruleset::DELETE_SUGGESTION.to_string()
         } else {
             group
                 .suggestions
@@ -1168,11 +1083,11 @@ fn collect_sarif(
 ) {
     for issue in r.issues {
         let rule_name = issue.rule_type.name();
-        let rule_id = format!("zhtw-mcp/{rule_name}");
+        let rule_id = format!("zhtw-core/{rule_name}");
         let level = match issue.severity {
-            zhtw_mcp::rules::ruleset::Severity::Error => "error",
-            zhtw_mcp::rules::ruleset::Severity::Warning => "warning",
-            zhtw_mcp::rules::ruleset::Severity::Info => "note",
+            zhtw_core::rules::ruleset::Severity::Error => "error",
+            zhtw_core::rules::ruleset::Severity::Warning => "warning",
+            zhtw_core::rules::ruleset::Severity::Info => "note",
         };
 
         rules
@@ -1216,8 +1131,8 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
     let c = if use_color() { &COLORS_ON } else { &COLORS_OFF };
 
     let profile = match params.profile_name {
-        None => zhtw_mcp::rules::ruleset::Profile::Base,
-        Some(s) => zhtw_mcp::rules::ruleset::Profile::from_str_strict(s)
+        None => zhtw_core::rules::ruleset::Profile::Base,
+        Some(s) => zhtw_core::rules::ruleset::Profile::from_str_strict(s)
             .ok_or_else(|| anyhow::anyhow!("unknown profile: {s} (expected 'base' or 'strict')"))?,
     };
 
@@ -1242,26 +1157,26 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
     cfg.translationese_domain = params.translationese_domain;
 
     // Build scanner once for all files, merging overrides + active packs.
-    let ruleset = zhtw_mcp::rules::loader::load_embedded_ruleset()?;
-    let store = zhtw_mcp::rules::store::OverrideStore::open(params.overrides_path)?;
-    let pack_store = zhtw_mcp::rules::store::PackStore::new(params.packs_dir.to_path_buf());
+    let ruleset = zhtw_core::rules::loader::load_embedded_ruleset()?;
+    let store = zhtw_core::rules::store::OverrideStore::open(params.overrides_path)?;
+    let pack_store = zhtw_core::rules::store::PackStore::new(params.packs_dir.to_path_buf());
 
-    let (spelling_rules, case_rules) = zhtw_mcp::rules::store::build_merged_rules(
+    let (spelling_rules, case_rules) = zhtw_core::rules::store::build_merged_rules(
         &ruleset.spelling_rules,
         &ruleset.case_rules,
         &store,
         &pack_store,
         params.active_packs,
     );
-    let ruleset_hash = zhtw_mcp::rules::loader::compute_ruleset_hash(&spelling_rules, &case_rules);
-    let filter = zhtw_mcp::engine::scan::ProfileFilter::from_config(&cfg);
+    let ruleset_hash = zhtw_core::rules::loader::compute_ruleset_hash(&spelling_rules, &case_rules);
+    let filter = zhtw_core::engine::scan::ProfileFilter::from_config(&cfg);
     let scanner =
-        zhtw_mcp::engine::scan::Scanner::new_filtered(spelling_rules, case_rules, &filter);
-    let s2t = zhtw_mcp::engine::s2t::S2TConverter::new();
+        zhtw_core::engine::scan::Scanner::new_filtered(spelling_rules, case_rules, &filter);
+    let s2t = zhtw_core::engine::s2t::S2TConverter::new();
 
     // Open translation memory (if path provided and file exists/creatable).
     let tm_store = params.tm_path.as_ref().and_then(|p| {
-        zhtw_mcp::rules::store::TranslationMemoryStore::open(p)
+        zhtw_core::rules::store::TranslationMemoryStore::open(p)
             .map_err(|e| tracing::warn!("failed to open TM at {}: {e}", p.display()))
             .ok()
     });
@@ -1269,7 +1184,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
     // Scan cache: skip re-scanning unchanged files (lint-only, no fix).
     // Disabled when --verify is active (calibrate_issues needs the full text).
     // Wrapped in Mutex for rayon parallel scanning.
-    let use_cache = params.fix_mode == zhtw_mcp::fixer::FixMode::None && {
+    let use_cache = params.fix_mode == zhtw_core::fixer::FixMode::None && {
         #[cfg(feature = "translate")]
         {
             !params.verify
@@ -1280,7 +1195,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
         }
     };
     let scan_cache =
-        use_cache.then(|| std::sync::Mutex::new(zhtw_mcp::cache::ScanCache::open_default()));
+        use_cache.then(|| std::sync::Mutex::new(zhtw_core::cache::ScanCache::open_default()));
 
     // --diff-from: resolve changed files via git, use as file args.
     let diff_files: Vec<String>;
@@ -1308,7 +1223,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
     // Load baseline if provided.
     let mut baseline = params
         .baseline_path
-        .map(zhtw_mcp::baseline::Baseline::load)
+        .map(zhtw_core::baseline::Baseline::load)
         .transpose()?
         .unwrap_or_default();
     let mut baseline_count: usize = 0;
@@ -1316,33 +1231,33 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
 
     let apply_glossary_to_issues =
         |work_text: &str,
-         content_type: zhtw_mcp::engine::scan::ContentType,
-         issues: Vec<zhtw_mcp::rules::ruleset::Issue>| {
+         content_type: zhtw_core::engine::scan::ContentType,
+         issues: Vec<zhtw_core::rules::ruleset::Issue>| {
             if params.glossary.is_empty() {
                 return issues;
             }
-            let md_opts = zhtw_mcp::engine::markdown::MdScanOptions::new(
+            let md_opts = zhtw_core::engine::markdown::MdScanOptions::new(
                 matches!(
                     content_type,
-                    zhtw_mcp::engine::scan::ContentType::MarkdownScanCode
+                    zhtw_core::engine::scan::ContentType::MarkdownScanCode
                 ),
                 cfg.exempt_blockquotes,
             );
-            let excluded = zhtw_mcp::engine::scan::build_exclusions_for_content_type_with_options(
+            let excluded = zhtw_core::engine::scan::build_exclusions_for_content_type_with_options(
                 work_text,
                 content_type,
                 md_opts,
             );
-            let mut issues = zhtw_mcp::rules::glossary::apply_glossary(
+            let mut issues = zhtw_core::rules::glossary::apply_glossary(
                 work_text,
                 &excluded,
                 issues,
                 &params.glossary,
             );
-            let line_index = zhtw_mcp::engine::lineindex::LineIndex::new(work_text);
+            let line_index = zhtw_core::engine::lineindex::LineIndex::new(work_text);
             line_index.fill_line_col_sorted(
                 &mut issues,
-                zhtw_mcp::engine::lineindex::ColumnEncoding::Utf16,
+                zhtw_core::engine::lineindex::ColumnEncoding::Utf16,
             );
             issues
         };
@@ -1360,26 +1275,26 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
         String,
         bool,
         usize,
-        zhtw_mcp::engine::scan::ScanOutput,
-        zhtw_mcp::engine::scan::ContentType,
+        zhtw_core::engine::scan::ScanOutput,
+        zhtw_core::engine::scan::ContentType,
     )> {
         let content_type = match params.content_type_override {
-            Some("markdown") => zhtw_mcp::engine::scan::ContentType::Markdown,
-            Some("markdown-scan-code") => zhtw_mcp::engine::scan::ContentType::MarkdownScanCode,
-            Some("yaml") => zhtw_mcp::engine::scan::ContentType::Yaml,
+            Some("markdown") => zhtw_core::engine::scan::ContentType::Markdown,
+            Some("markdown-scan-code") => zhtw_core::engine::scan::ContentType::MarkdownScanCode,
+            Some("yaml") => zhtw_core::engine::scan::ContentType::Yaml,
             Some(_) | None => {
                 let lower = file_arg.to_ascii_lowercase();
                 if lower.ends_with(".md") || lower.ends_with(".markdown") {
-                    zhtw_mcp::engine::scan::ContentType::Markdown
+                    zhtw_core::engine::scan::ContentType::Markdown
                 } else if lower.ends_with(".yml") || lower.ends_with(".yaml") {
-                    zhtw_mcp::engine::scan::ContentType::Yaml
+                    zhtw_core::engine::scan::ContentType::Yaml
                 } else {
-                    zhtw_mcp::engine::scan::ContentType::Plain
+                    zhtw_core::engine::scan::ContentType::Plain
                 }
             }
         };
 
-        let cache_params = zhtw_mcp::cache::ScanParams {
+        let cache_params = zhtw_core::cache::ScanParams {
             ruleset_hash: ruleset_hash.clone(),
             profile: profile.name().to_owned(),
             content_type: format!("{content_type:?}"),
@@ -1408,7 +1323,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             // Fast-path: check mtime+size before reading the file.
             let fast_hit = scan_cache.as_ref().and_then(|mtx| {
                 let mut c = mtx.lock().ok()?;
-                let mtime = zhtw_mcp::cache::mtime_secs(&meta);
+                let mtime = zhtw_core::cache::mtime_secs(&meta);
                 c.check_fast(file_arg, mtime, meta.len(), &cache_params)
                     .into_hit()
             });
@@ -1416,7 +1331,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             // both scan the original text buffer; the fast path can
             // only short-circuit when neither feature needs it.  Same
             // story for fix/SC/verify.
-            let need_text_post_scan = params.fix_mode != zhtw_mcp::fixer::FixMode::None
+            let need_text_post_scan = params.fix_mode != zhtw_core::fixer::FixMode::None
                 || !params.glossary.is_empty()
                 || params.consistency
                 || {
@@ -1453,8 +1368,8 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
                 .read_to_string(&mut text)
                 .with_context(|| format!("read file: {file_arg}"))?;
 
-            let input_was_sc = zhtw_mcp::engine::zhtype::detect_chinese_type(&text)
-                == zhtw_mcp::engine::zhtype::ChineseType::Simplified;
+            let input_was_sc = zhtw_core::engine::zhtype::detect_chinese_type(&text)
+                == zhtw_core::engine::zhtype::ChineseType::Simplified;
             if input_was_sc {
                 text = s2t.convert(&text);
             }
@@ -1471,7 +1386,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
                 None => {
                     let o = scanner.scan_for_content_type_with_config(&text, content_type, cfg);
                     if let Some(Ok(mut c)) = scan_cache.as_ref().map(|mtx| mtx.lock()) {
-                        let mtime = zhtw_mcp::cache::mtime_secs(&meta);
+                        let mtime = zhtw_core::cache::mtime_secs(&meta);
                         c.put(
                             file_arg,
                             text.as_bytes(),
@@ -1492,7 +1407,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             // Project glossary banned-term scanning and the 35.1
             // consistency report both scan the original buffer.
             let need_text = input_was_sc
-                || params.fix_mode != zhtw_mcp::fixer::FixMode::None
+                || params.fix_mode != zhtw_core::fixer::FixMode::None
                 || !params.glossary.is_empty()
                 || params.consistency
                 || {
@@ -1523,8 +1438,8 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             "stdin input exceeds {MAX_CLI_FILE_BYTES} byte limit"
         );
 
-        let input_was_sc = zhtw_mcp::engine::zhtype::detect_chinese_type(&text)
-            == zhtw_mcp::engine::zhtype::ChineseType::Simplified;
+        let input_was_sc = zhtw_core::engine::zhtype::detect_chinese_type(&text)
+            == zhtw_core::engine::zhtype::ChineseType::Simplified;
         if input_was_sc {
             text = s2t.convert(&text);
         }
@@ -1544,8 +1459,8 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
         String,
         bool,
         usize,
-        zhtw_mcp::engine::scan::ScanOutput,
-        zhtw_mcp::engine::scan::ContentType,
+        zhtw_core::engine::scan::ScanOutput,
+        zhtw_core::engine::scan::ContentType,
     )>;
     let scan_results: Vec<ScanResult> = if resolved.len() > 1 && !has_stdin {
         use rayon::prelude::*;
@@ -1576,20 +1491,20 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
         issues = apply_glossary_to_issues(&text, content_type, issues);
 
         // Tier 2: local disambiguation.
-        let disambig_cfg = zhtw_mcp::engine::disambig::DisambigConfig {
+        let disambig_cfg = zhtw_core::engine::disambig::DisambigConfig {
             profile,
             ..Default::default()
         };
         let _disambig_stats =
-            zhtw_mcp::engine::disambig::disambiguate_batch(&mut issues, &text, &disambig_cfg);
+            zhtw_core::engine::disambig::disambiguate_batch(&mut issues, &text, &disambig_cfg);
 
-        let scan = |input: &str| -> zhtw_mcp::engine::scan::ScanOutput {
+        let scan = |input: &str| -> zhtw_core::engine::scan::ScanOutput {
             scanner.scan_for_content_type_with_config(input, content_type, cfg)
         };
 
         // Apply fixes if requested. Filter out TM-suppressed issues so the
         // fixer does not auto-correct terms the user deliberately rejected.
-        let fix_result = if params.fix_mode != zhtw_mcp::fixer::FixMode::None {
+        let fix_result = if params.fix_mode != zhtw_core::fixer::FixMode::None {
             let fix_issues: Vec<_> = if let Some(ref tm) = tm_store {
                 issues
                     .iter()
@@ -1599,7 +1514,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             } else {
                 issues.clone()
             };
-            Some(zhtw_mcp::fixer::apply_fixes_with_context(
+            Some(zhtw_core::fixer::apply_fixes_with_context(
                 &text,
                 &fix_issues,
                 params.fix_mode,
@@ -1685,7 +1600,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             let mut rescan = rescan_output.issues;
             if let Some(ref fix) = fix_result {
                 // Suppress convergent-chain noise from the fixer's own replacements.
-                zhtw_mcp::fixer::suppress_convergent_issues(&mut rescan, &fix.applied_fixes);
+                zhtw_core::fixer::suppress_convergent_issues(&mut rescan, &fix.applied_fixes);
             }
             apply_glossary_to_issues(rescan_text, content_type, rescan)
         } else {
@@ -1704,7 +1619,7 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             };
             let mut issues_mut = report_issues;
             let result =
-                zhtw_mcp::engine::translate::calibrate_issues(calibrate_text, &mut issues_mut);
+                zhtw_core::engine::translate::calibrate_issues(calibrate_text, &mut issues_mut);
             eprintln!(
                 "{}  verify: {} matched, {} unmatched, {} no_english, api_ok={}{}",
                 c.dim, result.matched, result.unmatched, result.no_english, result.api_ok, c.reset,
@@ -1723,21 +1638,21 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             let mut issues = report_issues;
             for issue in &mut issues {
                 match issue.rule_type {
-                    zhtw_mcp::rules::ruleset::IssueType::Punctuation
-                    | zhtw_mcp::rules::ruleset::IssueType::Case
-                    | zhtw_mcp::rules::ruleset::IssueType::Variant
-                    | zhtw_mcp::rules::ruleset::IssueType::Grammar
-                    | zhtw_mcp::rules::ruleset::IssueType::AiStyle => continue,
+                    zhtw_core::rules::ruleset::IssueType::Punctuation
+                    | zhtw_core::rules::ruleset::IssueType::Case
+                    | zhtw_core::rules::ruleset::IssueType::Variant
+                    | zhtw_core::rules::ruleset::IssueType::Grammar
+                    | zhtw_core::rules::ruleset::IssueType::AiStyle => continue,
                     _ => {}
                 }
-                let is_glossary_banned = zhtw_mcp::rules::glossary::is_glossary_banned(issue);
+                let is_glossary_banned = zhtw_core::rules::glossary::is_glossary_banned(issue);
                 if is_glossary_banned {
                     continue;
                 }
                 if tm.should_suppress(&issue.found)
-                    && issue.severity != zhtw_mcp::rules::ruleset::Severity::Info
+                    && issue.severity != zhtw_core::rules::ruleset::Severity::Info
                 {
-                    issue.severity = zhtw_mcp::rules::ruleset::Severity::Info;
+                    issue.severity = zhtw_core::rules::ruleset::Severity::Info;
                     tm_suppressed += 1;
                 }
             }
@@ -1773,18 +1688,18 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
 
         let error_count = new_issues
             .iter()
-            .filter(|i| i.severity == zhtw_mcp::rules::ruleset::Severity::Error)
+            .filter(|i| i.severity == zhtw_core::rules::ruleset::Severity::Error)
             .count();
         let warning_count = new_issues
             .iter()
-            .filter(|i| i.severity == zhtw_mcp::rules::ruleset::Severity::Warning)
+            .filter(|i| i.severity == zhtw_core::rules::ruleset::Severity::Warning)
             .count();
         total_errors += error_count;
         total_warnings += warning_count;
 
         // Accumulate resolution tier stats from the final reported issues.
         for issue in &new_issues {
-            use zhtw_mcp::rules::ruleset::ResolutionTier;
+            use zhtw_core::rules::ruleset::ResolutionTier;
             match ResolutionTier::classify(issue) {
                 ResolutionTier::Deterministic => total_deterministic += 1,
                 ResolutionTier::Heuristic => total_heuristic += 1,
@@ -1879,9 +1794,9 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
             runs: [SarifRun {
                 tool: SarifTool {
                     driver: SarifDriver {
-                        name: "zhtw-mcp",
+                        name: "zhtw-core",
                         version: env!("CARGO_PKG_VERSION"),
-                        information_uri: "https://github.com/aspect-build/zhtw-mcp",
+                        information_uri: "https://github.com/aspect-build/zhtw-core",
                         rules: sarif_rules.into_values().collect(),
                     },
                 },
@@ -1928,17 +1843,17 @@ fn run_lint_batch(params: &LintBatchParams<'_>) -> Result<()> {
 // Convert subcommand: SC → TW pipeline
 
 /// Built-in SC→TC conversion (character/phrase level via embedded OpenCC
-/// dictionaries) then zhtw-mcp aggressive fix for context-aware zh-TW
+/// dictionaries) then zhtw-core aggressive fix for context-aware zh-TW
 /// phrase correction. No external OpenCC dependency required.
 fn run_convert(
     file_args: &[String],
     content_type_str: Option<&str>,
     overrides_path: PathBuf,
 ) -> Result<()> {
-    use zhtw_mcp::engine::scan::{ContentType, Scanner};
-    use zhtw_mcp::fixer::{apply_fixes_with_context, FixMode};
-    use zhtw_mcp::rules::loader::load_embedded_ruleset;
-    use zhtw_mcp::rules::store::OverrideStore;
+    use zhtw_core::engine::scan::{ContentType, Scanner};
+    use zhtw_core::fixer::{apply_fixes_with_context, FixMode};
+    use zhtw_core::rules::loader::load_embedded_ruleset;
+    use zhtw_core::rules::store::OverrideStore;
 
     // Read input (files or stdin).
     let mut raw_input = String::new();
@@ -1955,17 +1870,17 @@ fn run_convert(
     }
 
     // Step 1: SC→TC character/phrase conversion (built-in, no OpenCC dependency).
-    let s2t = zhtw_mcp::engine::s2t::S2TConverter::new();
+    let s2t = zhtw_core::engine::s2t::S2TConverter::new();
     let s2t_output = s2t.convert(&raw_input);
 
     // Step 2: Build scanner with overrides.
     let store = OverrideStore::open(&overrides_path)?;
     let ruleset = load_embedded_ruleset()?;
-    let (spelling_rules, case_rules) = zhtw_mcp::rules::store::build_merged_rules(
+    let (spelling_rules, case_rules) = zhtw_core::rules::store::build_merged_rules(
         &ruleset.spelling_rules,
         &ruleset.case_rules,
         &store,
-        &zhtw_mcp::rules::store::PackStore::new(zhtw_mcp::rules::store::default_packs_dir()),
+        &zhtw_core::rules::store::PackStore::new(zhtw_core::rules::store::default_packs_dir()),
         &[],
     );
     let scanner = Scanner::new(spelling_rules, case_rules);
@@ -1995,11 +1910,11 @@ fn run_convert(
     let max_rounds = 3;
     for round in 0..max_rounds {
         let excluded =
-            zhtw_mcp::engine::scan::build_exclusions_for_content_type(&text, content_type);
+            zhtw_core::engine::scan::build_exclusions_for_content_type(&text, content_type);
         let scan_out = scanner.scan_with_prebuilt_excluded(
             &text,
             &excluded,
-            zhtw_mcp::rules::ruleset::Profile::Base,
+            zhtw_core::rules::ruleset::Profile::Base,
             content_type,
         );
         let issues = scan_out.issues;
@@ -2035,16 +1950,16 @@ fn run_convert(
     #[cfg(feature = "translate")]
     {
         let excluded =
-            zhtw_mcp::engine::scan::build_exclusions_for_content_type(&text, content_type);
+            zhtw_core::engine::scan::build_exclusions_for_content_type(&text, content_type);
         let scan_out = scanner.scan_with_prebuilt_excluded(
             &text,
             &excluded,
-            zhtw_mcp::rules::ruleset::Profile::Base,
+            zhtw_core::rules::ruleset::Profile::Base,
             content_type,
         );
         let mut remaining = scan_out.issues;
         if !remaining.is_empty() {
-            let cr = zhtw_mcp::engine::translate::calibrate_issues(&text, &mut remaining);
+            let cr = zhtw_core::engine::translate::calibrate_issues(&text, &mut remaining);
             eprintln!(
                 "convert: verify — {} matched, {} unmatched, {} no_english, api_ok={}",
                 cr.matched, cr.unmatched, cr.no_english, cr.api_ok,
@@ -2074,33 +1989,6 @@ fn run_convert(
     Ok(())
 }
 
-// Setup subcommand
-
-fn run_setup(host_str: &str) -> Result<()> {
-    use zhtw_mcp::mcp::setup::{self, Host};
-
-    let host = match Host::from_name(host_str) {
-        Some(h) => h,
-        None => {
-            let hosts: Vec<&str> = setup::ALL_HOSTS.iter().map(|h| h.name()).collect();
-            anyhow::bail!(
-                "unknown host: '{host_str}'. Available: {}",
-                hosts.join(", ")
-            );
-        }
-    };
-
-    let output = setup::generate_for_host(host);
-    println!("{}", serde_json::to_string_pretty(&output)?);
-    Ok(())
-}
-
-fn run_translation_guide() -> Result<()> {
-    let output = zhtw_mcp::mcp::setup::generate_translation_guide();
-    println!("{}", serde_json::to_string_pretty(&output)?);
-    Ok(())
-}
-
 // Pack subcommand
 
 fn run_tm_cmd(
@@ -2112,7 +2000,7 @@ fn run_tm_cmd(
     record_chose: Option<&str>,
     record_context: Option<&str>,
 ) -> Result<()> {
-    use zhtw_mcp::rules::store::{iso_date_today, TmEntry, TranslationMemoryStore};
+    use zhtw_core::rules::store::{iso_date_today, TmEntry, TranslationMemoryStore};
 
     match cmd {
         "list" => {
@@ -2174,7 +2062,7 @@ fn run_tm_cmd(
 }
 
 fn run_pack_cmd(cmd: &str, arg: Option<&str>, packs_dir: &std::path::Path) -> Result<()> {
-    use zhtw_mcp::rules::store::PackStore;
+    use zhtw_core::rules::store::PackStore;
 
     let pack_store = PackStore::new(packs_dir.to_path_buf());
 

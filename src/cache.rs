@@ -8,8 +8,6 @@
 // TTL-based expiry (default 24h) and MAX_ENTRIES cap prevent unbounded
 // growth.  Atomic writes via tempfile+rename with flock serialization.
 //
-// MCP path does NOT use this cache (stateless by design).
-
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -324,11 +322,11 @@ fn atomic_write(parent: &Path, dest: &Path, bytes: &[u8]) -> bool {
         .is_ok_and(|mut tmp| tmp.write_all(bytes).is_ok() && tmp.persist(dest).is_ok())
 }
 
-/// Default cache file location: ~/.cache/zhtw-mcp/scan-cache.json
+/// Default cache file location: ~/.cache/zhtw-core/scan-cache.json
 fn default_cache_path() -> PathBuf {
     dirs::cache_dir()
         .unwrap_or_else(|| PathBuf::from("/tmp"))
-        .join("zhtw-mcp")
+        .join("zhtw-core")
         .join("scan-cache.json")
 }
 

@@ -1,0 +1,21 @@
+#![cfg(feature = "discord")]
+
+use zhtw_core::discord_policy::{protected_spans, rewrite_is_safe};
+use zhtw_core::llm::RewriteRequest;
+
+#[test]
+fn protected_discord_content_must_survive_rewrite() {
+    let original = "請看 https://example.com <@123> \x60code\x60";
+    let spans = protected_spans(original);
+    assert_eq!(spans.len(), 3);
+
+    let request = RewriteRequest {
+        locale: "zh-TW".to_string(),
+        original_text: original.to_string(),
+        deterministic_draft: original.to_string(),
+        issues: Vec::new(),
+        protected_spans: spans,
+    };
+    assert!(rewrite_is_safe(&request, original));
+    assert!(!rewrite_is_safe(&request, "請看 https://example.com"));
+}

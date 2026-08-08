@@ -215,7 +215,12 @@ pub fn apply_fixes_with_context(
         // Tier 2 can suppress lexical issues as likely false positives.
         // Respect that suppression during auto-fix so we do not rewrite
         // general prose like "學習的進程" into OS terminology.
-        if !orthographic && issue.tier2_outcome == Tier2Outcome::Suppressed {
+        // An external resolver has already selected an allowlisted candidate
+        // for this exact span, so its decision is allowed to override the
+        // local gray-zone/suppressed outcome.
+        let externally_resolved = issue.llm_judged && issue.suggestions.len() == 1;
+        if !orthographic && !externally_resolved && issue.tier2_outcome == Tier2Outcome::Suppressed
+        {
             skipped += 1;
             continue;
         }
@@ -237,7 +242,7 @@ pub fn apply_fixes_with_context(
         }
 
         // Context-clue gating for lexical issues.
-        if has_clues && !orthographic {
+        if has_clues && !orthographic && !externally_resolved {
             // Only LexicalContextual can handle context-clue-gated terms.
             if mode != FixMode::LexicalContextual {
                 skipped += 1;

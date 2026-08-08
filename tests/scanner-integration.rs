@@ -5,8 +5,8 @@
 // code block exclusion, URL/path exclusion, @mention exclusion, case rules,
 // punctuation normalization, and alternatives handling.
 
-use zhtw_mcp::engine::scan::{ContentType, Scanner};
-use zhtw_mcp::rules::ruleset::{CaseRule, Profile, RuleType, SpellingRule};
+use zhtw_core::engine::scan::{ContentType, Scanner};
+use zhtw_core::rules::ruleset::{CaseRule, Profile, RuleType, SpellingRule};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -707,8 +707,8 @@ fn punct_decimal_number_untouched() {
 
 #[test]
 fn punct_definition_list_colon_skipped() {
-    use zhtw_mcp::engine::scan::ContentType;
-    use zhtw_mcp::rules::ruleset::IssueType;
+    use zhtw_core::engine::scan::ContentType;
+    use zhtw_core::rules::ruleset::IssueType;
     let scanner = Scanner::new(vec![], vec![]);
     // Markdown definition list: term on one line, `: definition` on the next.
     let text = "尾端延遲\n: 以互補累積分佈函數描述延遲";
@@ -726,8 +726,8 @@ fn punct_definition_list_colon_skipped() {
 
 #[test]
 fn punct_definition_list_colon_indented_skipped() {
-    use zhtw_mcp::engine::scan::ContentType;
-    use zhtw_mcp::rules::ruleset::IssueType;
+    use zhtw_core::engine::scan::ContentType;
+    use zhtw_core::rules::ruleset::IssueType;
     let scanner = Scanner::new(vec![], vec![]);
     // Indented definition list (e.g. nested in blockquote or list).
     let text = "術語\n  : 定義內容在此";
@@ -764,7 +764,7 @@ fn punct_colon_after_cjk_still_flagged() {
 fn grammar_issues_coexist_with_spelling() {
     // 軟件 triggers a cross-strait spelling rule; 是不是…嗎 triggers grammar.
     // Both should appear in output since grammar runs after overlap resolution.
-    use zhtw_mcp::rules::ruleset::IssueType;
+    use zhtw_core::rules::ruleset::IssueType;
     let rules = vec![spelling("軟件", &["軟體"])];
     let scanner = Scanner::new(rules, vec![]);
     let output = scanner.scan("你是不是喜歡這個軟件嗎？");
@@ -782,7 +782,7 @@ fn grammar_issues_coexist_with_spelling() {
 
 #[test]
 fn grammar_issues_have_line_col() {
-    use zhtw_mcp::rules::ruleset::IssueType;
+    use zhtw_core::rules::ruleset::IssueType;
     let scanner = Scanner::new(vec![], vec![]);
     // Two-line input: grammar issue on the second line.
     let output = scanner.scan("第一行\n你是不是學生嗎？");
@@ -800,8 +800,8 @@ fn grammar_issues_have_line_col() {
 
 #[test]
 fn grammar_disabled_with_relaxed() {
-    use zhtw_mcp::engine::scan::ContentType;
-    use zhtw_mcp::rules::ruleset::IssueType;
+    use zhtw_core::engine::scan::ContentType;
+    use zhtw_core::rules::ruleset::IssueType;
     let scanner = Scanner::new(vec![], vec![]);
     let text = "你是不是學生嗎？";
     let cfg = Profile::Base.config().with_relaxed();
@@ -817,8 +817,8 @@ fn grammar_disabled_with_relaxed() {
 
 #[test]
 fn grammar_enabled_in_base_profile() {
-    use zhtw_mcp::engine::scan::ContentType;
-    use zhtw_mcp::rules::ruleset::IssueType;
+    use zhtw_core::engine::scan::ContentType;
+    use zhtw_core::rules::ruleset::IssueType;
     let scanner = Scanner::new(vec![], vec![]);
     let text = "你是不是學生嗎？";
     let output = scanner.scan_for_content_type(text, ContentType::Plain, Profile::Base);
@@ -833,8 +833,8 @@ fn grammar_enabled_in_base_profile() {
 
 #[test]
 fn grammar_excluded_in_markdown_code_block() {
-    use zhtw_mcp::engine::scan::ContentType;
-    use zhtw_mcp::rules::ruleset::IssueType;
+    use zhtw_core::engine::scan::ContentType;
+    use zhtw_core::rules::ruleset::IssueType;
     let scanner = Scanner::new(vec![], vec![]);
     let text = "```\n你是不是學生嗎？\n```";
     let output = scanner.scan_for_content_type(text, ContentType::Markdown, Profile::Base);
@@ -852,7 +852,7 @@ fn grammar_deterministic_sort_order() {
     // 進行 triggers both dui_jinxing (對資料進行分析) and bureaucratic
     // nominalization (進行分析) at overlapping offsets.  Verify grammar
     // issues are sorted by offset (ascending), then by length (descending).
-    use zhtw_mcp::rules::ruleset::IssueType;
+    use zhtw_core::rules::ruleset::IssueType;
     let scanner = Scanner::new(vec![], vec![]);
     let output = scanner.scan("對資料進行分析");
     let grammar: Vec<_> = output
@@ -883,7 +883,7 @@ fn grammar_clean_text_produces_no_issues() {
     let has_grammar = output
         .issues
         .iter()
-        .any(|i| i.rule_type == zhtw_mcp::rules::ruleset::IssueType::Grammar);
+        .any(|i| i.rule_type == zhtw_core::rules::ruleset::IssueType::Grammar);
     assert!(!has_grammar, "clean text should not trigger grammar checks");
 }
 
@@ -891,7 +891,7 @@ fn grammar_clean_text_produces_no_issues() {
 // AI writing detection (40.1)
 // ---------------------------------------------------------------------------
 
-use zhtw_mcp::rules::ruleset::IssueType;
+use zhtw_core::rules::ruleset::IssueType;
 
 fn ai_filler_rule(from: &str, to: &[&str]) -> SpellingRule {
     SpellingRule {

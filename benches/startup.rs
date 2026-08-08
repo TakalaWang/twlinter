@@ -1,4 +1,4 @@
-// Startup / cold-first-request profiler for zhtw-mcp.
+// Startup / cold-first-request profiler for zhtw-core.
 //
 // Not a criterion benchmark: cold-start is a once-per-process event. Criterion
 // runs many iterations, so its lazy statics (grammar AC, zhtype char tables,
@@ -18,9 +18,9 @@
 
 use std::time::Instant;
 
-use zhtw_mcp::engine::scan::Scanner;
-use zhtw_mcp::rules::loader::load_embedded_ruleset;
-use zhtw_mcp::rules::ruleset::Profile;
+use zhtw_core::engine::scan::Scanner;
+use zhtw_core::rules::loader::load_embedded_ruleset;
+use zhtw_core::rules::ruleset::Profile;
 
 // Representative first-request text: mixed CJK prose with flaggable Mainland
 // terms plus ASCII, sized like a typical paragraph a client sends first.

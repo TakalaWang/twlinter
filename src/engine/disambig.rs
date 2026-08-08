@@ -1,6 +1,6 @@
 // Tier 2 local disambiguation scorer.
 //
-// Sits between deterministic rule matching (Tier 1) and LLM sampling (Tier 3).
+// Sits between deterministic rule matching (Tier 1) and external LLM decisions (Tier 3).
 // Scores each unresolved issue using three local strategies:
 //
 //   1. Neighbor-word heuristic: AC match of context_clues in ±40-char window.
@@ -9,7 +9,7 @@
 //
 // Issues scoring above the decided threshold are resolved locally.
 // Issues scoring below the ambiguous threshold are suppressed (false positive).
-// Issues in the gray zone proceed to Tier 3 (LLM).
+// Issues in the gray zone can proceed to Tier 3 (LLM).
 
 use std::sync::Arc;
 

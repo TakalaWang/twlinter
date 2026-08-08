@@ -1,4 +1,4 @@
-# zhtw-mcp Chrome extension
+# zhtw-core Chrome extension
 
 This Manifest V3 extension checks the visible text in the active tab for non-standard Traditional Chinese usage, highlights findings in the page, and shows the warning/error count in the extension badge.
 

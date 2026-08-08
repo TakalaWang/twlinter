@@ -1,5 +1,5 @@
 {
-  description = "Nix package for zhtw-mcp";
+  description = "Nix package for zhtw-core";
 
   inputs = {
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
@@ -55,7 +55,7 @@
             ]
           );
 
-        zhtw-mcp =
+        zhtw-core =
           let
             cargoToml = fromTOML (builtins.readFile ./Cargo.toml);
             rustPlatform = final.makeRustPlatform {
@@ -64,7 +64,7 @@
             };
           in
           rustPlatform.buildRustPackage {
-            pname = "zhtw-mcp";
+            pname = "zhtw-core";
             inherit (cargoToml.package) version;
 
             src = ./.;
@@ -93,10 +93,10 @@
             ];
 
             meta = with final.lib; {
-              description = "MCP server for Traditional Chinese (zh-TW) text linting and normalization";
-              homepage = "https://github.com/sysprog21/zhtw-mcp";
+              description = "Traditional Chinese (zh-TW) conversion core";
+              homepage = "https://github.com/TakalaWang/zhtw-discord-bot";
               license = licenses.mit;
-              mainProgram = "zhtw-mcp";
+              mainProgram = "zhtw-core";
             };
           };
       };
@@ -104,8 +104,8 @@
       packages = forEachSupportedSystem (
         { pkgs, ... }:
         {
-          inherit (pkgs) zhtw-mcp;
-          default = pkgs.zhtw-mcp;
+          inherit (pkgs) zhtw-core;
+          default = pkgs.zhtw-core;
         }
       );
 

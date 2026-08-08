@@ -80,7 +80,7 @@ pub struct ProfileConfig {
     /// Political stance sub-profile. Controls which PoliticalColoring rules fire.
     pub political_stance: PoliticalStance,
     /// When true, skip line/col computation (byte offsets only).
-    /// Used by MCP tool which consumes offsets directly.
+    /// Used by consumers that only need byte offsets.
     pub offset_only: bool,
     /// When true (Markdown content only), exclude pulldown-cmark
     /// `Tag::BlockQuote` ranges from scanning.  Off by default — adopted
@@ -284,7 +284,7 @@ impl PoliticalStance {
 }
 
 /// Tier 2 disambiguation outcome stored on each Issue.
-/// Used by Tier 3 (sampling) to determine eligibility without
+/// Used by Tier 3 (external LLM decisions) to determine eligibility without
 /// fragile context-string parsing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Tier2Outcome {
@@ -295,7 +295,7 @@ pub enum Tier2Outcome {
     Resolved,
     /// Suppressed by Tier 2 (score below ambiguous threshold).
     Suppressed,
-    /// Gray zone — forwarded to Tier 3 for LLM judgment.
+    /// Gray zone — eligible for a Tier 3 LLM judgment.
     GrayZone,
 }
 
@@ -310,7 +310,7 @@ pub enum ResolutionTier {
     /// Resolved by Tier 2 local heuristics (context clues, profile
     /// priors, collocations, combined evidence).
     Heuristic,
-    /// Resolved by Tier 3 LLM sampling or judgment cache.
+    /// Resolved by a Tier 3 LLM decision.
     LlmJudged,
     /// Not conclusively resolved: suppressed as likely FP, skipped
     /// by budget exhaustion, or left in gray zone without LLM.
@@ -319,7 +319,7 @@ pub enum ResolutionTier {
 
 impl ResolutionTier {
     /// Derive the resolution tier from the issue's tier2_outcome and
-    /// whether LLM sampling produced a judgment (indicated by context
+    /// whether an LLM produced a judgment (indicated by context
     /// annotation).
     pub fn classify(issue: &Issue) -> Self {
         match issue.tier2_outcome {
@@ -590,8 +590,8 @@ pub struct Issue {
     /// left in the gray zone for Tier 3.  Internal — not serialized.
     #[serde(skip)]
     pub tier2_outcome: Tier2Outcome,
-    /// Whether Tier 3 LLM sampling produced a judgment for this issue.
-    /// Set by `refine_issues_with_sampling` (or judgment cache hit).
+    /// Whether Tier 3 LLM produced a judgment for this issue.
+    /// Set by the external decision adapter.
     /// Used by `ResolutionTier::classify` to distinguish LLM-judged from
     /// unresolved gray-zone issues without fragile string parsing.
     #[serde(skip)]
@@ -608,7 +608,7 @@ pub struct Issue {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub table_cell: Option<TableCell>,
     /// Per-issue editorial confidence (35.2).  Copied from the source
-    /// `SpellingRule` during inflation; surfaces in MCP explain output
+    /// `SpellingRule` during inflation; surfaces in explain output
     /// via `derive_explain_meta`.  `None` means heuristic derivation.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub editorial_confidence: Option<EditorialConfidence>,
@@ -750,7 +750,7 @@ pub enum IssueType {
     /// Consecutive duplicate word or character (e.g. '去去', 'cache cache').
     Repetition,
     /// Translationese (翻譯腔 / 歐化): Europeanized Chinese syntax/vocabulary.
-    /// Orthogonal to AiStyle — separate score, separate CLI/MCP surface.
+    /// Orthogonal to AiStyle — separate score and output surface.
     Translationese,
 }
 

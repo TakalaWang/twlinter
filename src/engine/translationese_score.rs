@@ -149,8 +149,8 @@ impl TranslationeseDomain {
 /// Per-signal threshold values for a given domain calibration.
 ///
 /// Register-aware fields (zy1b/zy3b/zy5) flip with the
-/// `--translationese-domain` flag (CLI) or `translationese_domain` MCP
-/// argument; threshold values are committed to source as the per-domain
+/// `--translationese-domain` flag (CLI) or a direct API option; threshold
+/// values are committed to source as the per-domain
 /// `thresholds()` table.
 #[derive(Debug, Clone, Copy)]
 pub struct DomainThresholds {

@@ -141,7 +141,7 @@ Fields: `from` (required), `to` (required, array), `type` (required: `cross_stra
 
 ### Runtime overrides
 
-Edit `overrides.json` in the platform config directory (`~/.config/zhtw-mcp/` on Linux, `~/Library/Application Support/zhtw-mcp/` on macOS):
+Edit `overrides.json` in the platform config directory (`~/.config/zhtw-core/` on Linux, `~/Library/Application Support/zhtw-core/` on macOS):
 
 ```json
 {

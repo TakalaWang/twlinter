@@ -19,7 +19,7 @@ pub const SCHEMA_VERSION: u32 = 3;
 /// Acquire an exclusive advisory lock on a lockfile adjacent to the target path.
 ///
 /// Returns the locked `File` handle; the lock is released when the handle is
-/// dropped. This prevents concurrent MCP server instances from racing on the
+/// dropped. This prevents concurrent processes from racing on the
 /// same JSON file during read-modify-write sequences.
 fn acquire_lock(path: &Path) -> Result<std::fs::File> {
     let lock_path = path.with_extension("lock");
@@ -56,8 +56,8 @@ pub struct PackMetadata {
 /// Persistent overrides/pack file: a JSON object with schema version,
 /// optional metadata, spelling overrides, and case overrides.
 ///
-/// Used for both ~/.config/zhtw-mcp/overrides.json and pack files
-/// in ~/.config/zhtw-mcp/packs/. The metadata is optional for
+/// Used for both ~/.config/zhtw-core/overrides.json and pack files
+/// in ~/.config/zhtw-core/packs/. The metadata is optional for
 /// backward compatibility with plain override files.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Overrides {
@@ -307,12 +307,12 @@ fn backup_and_reset(path: &Path, ext: &str) -> Overrides {
 /// Resolve the default overrides file path.
 ///
 /// Priority:
-///   1. $XDG_CONFIG_HOME/zhtw-mcp/overrides.json (if absolute)
-///   2. Platform-native config dir/zhtw-mcp/overrides.json
+///   1. $XDG_CONFIG_HOME/zhtw-core/overrides.json (if absolute)
+///   2. Platform-native config dir/zhtw-core/overrides.json
 ///   3. ./overrides.json (fallback)
 pub fn default_overrides_path() -> PathBuf {
     config_dir()
-        .map(|d| d.join("zhtw-mcp").join("overrides.json"))
+        .map(|d| d.join("zhtw-core").join("overrides.json"))
         .unwrap_or_else(|| PathBuf::from("overrides.json"))
 }
 
@@ -474,7 +474,7 @@ impl SuppressionStore {
 /// Resolve the default suppressions file path.
 pub fn default_suppressions_path() -> PathBuf {
     config_dir()
-        .map(|d| d.join("zhtw-mcp").join("suppressions.json"))
+        .map(|d| d.join("zhtw-core").join("suppressions.json"))
         .unwrap_or_else(|| PathBuf::from("suppressions.json"))
 }
 
@@ -767,7 +767,7 @@ pub fn iso_date_today() -> String {
 /// Resolve the default packs directory.
 pub fn default_packs_dir() -> PathBuf {
     config_dir()
-        .map(|d| d.join("zhtw-mcp").join("packs"))
+        .map(|d| d.join("zhtw-core").join("packs"))
         .unwrap_or_else(|| PathBuf::from("packs"))
 }
 
@@ -966,7 +966,7 @@ pub fn detect_pack_conflicts(packs: &[(String, &Overrides)]) -> Vec<PackConflict
 
 /// Build merged spelling and case rules from a base ruleset, override store,
 /// and active packs. Encapsulates the load-layer-merge pipeline shared by
-/// both the MCP server and the CLI batch linter.
+/// the CLI batch linter and library consumers.
 pub fn build_merged_rules(
     base_spelling: &[SpellingRule],
     base_case: &[CaseRule],

@@ -1,4 +1,4 @@
-// Markdown-aware text extraction for zhtw-mcp linting.
+// Markdown-aware text extraction for zhtw-core linting.
 //
 // Uses pulldown-cmark to parse Markdown and identify regions that should be
 // excluded from linting: code blocks, inline code, HTML blocks, and YAML
@@ -35,7 +35,7 @@ impl MdScanOptions {
     /// Construct options for a Markdown scan: pass `scan_code_blocks=true`
     /// when running with the `MarkdownScanCode` content type, and propagate
     /// the caller's `--exempt-blockquotes` flag.  Centralizes the literal
-    /// previously copy-pasted across the CLI and MCP entry points.
+    /// previously copy-pasted across CLI and library entry points.
     pub fn new(scan_code_blocks: bool, exempt_blockquotes: bool) -> Self {
         Self {
             scan_code_blocks,

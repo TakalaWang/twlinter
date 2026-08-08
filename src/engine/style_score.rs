@@ -6,8 +6,8 @@
 //
 // No new detectors, no scoring-module changes — this module reads
 // `AiSignatureReport`, `TranslationeseReport`, and the issue list, then
-// emits a flat scorecard.  Wired by the CLI `--detect-style` path and the
-// MCP `detect_style` parameter.
+// emits a flat scorecard.  Wired by the CLI `--detect-style` path and direct
+// library consumers.
 
 use serde::{Deserialize, Serialize};
 

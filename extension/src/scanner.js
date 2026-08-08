@@ -1,11 +1,11 @@
-import init, { scan_text } from "../dist/zhtw_mcp_wasm.js";
+import init, { scan_text } from "../dist/zhtw_core_wasm.js";
 
 let initPromise;
 
 async function loadWasmModule() {
   if (!initPromise) {
     initPromise = (async () => {
-      const wasmUrl = chrome.runtime.getURL("dist/zhtw_mcp_wasm_bg.wasm");
+      const wasmUrl = chrome.runtime.getURL("dist/zhtw_core_wasm_bg.wasm");
       await init({ module_or_path: wasmUrl });
     })();
   }

@@ -15,19 +15,18 @@ The scanner detects Traditional vs. Simplified Chinese by counting exclusive cha
 7. Overlap resolution: longer match wins, higher severity on tie
 8. Profile filtering (e.g., `臺`/`台` only in `strict`)
 9. Tier 2 local disambiguation: collocations, context clue density, profile priors. Issues scoring >= 0.6 resolve locally, < 0.3 suppressed as likely FP, [0.3, 0.6) forwarded to Tier 3
-10. Tier 3 sampling (optional): gray-zone terms escalated to host LLM, results cached in persistent judgment cache
+10. Tier 3 Gemini decision (optional): gray-zone terms receive only their candidate list and local context
 
 ## Design decisions
 
-- No async runtime. Synchronous stdio uses a background thread + mpsc for timeout-bounded sampling. `--features async-transport` remains as a compatibility alias.
+- The core is transport-independent. The Discord adapter runs blocking Gemini HTTP calls in a worker task.
 - Pure Rust, no C/C++ dependencies. MMSEG segmenter builds its dictionary from ruleset vocabulary at construction time.
 - Byte-safe edits: positions from pulldown-cmark event ranges map back to original byte offsets.
 - JSON ruleset (`assets/ruleset.json`) embedded via `include_str!`. Runtime overrides in platform config directory.
 - SHA-256 trace IDs for reproducibility. No `uuid` crate dependency.
 - Small release binary (~3 MB on x86-64 Linux, LTO + strip).
-- Sampling (step 10) only activates when running as an MCP server inside an AI assistant. The standalone CLI runs Tier 2 disambiguation but skips Tier 3 sampling, keeping gray-zone issues at their original severity.
-- Persistent judgment cache (`~/.config/zhtw-mcp/judgment_cache.json`) stores LLM disambiguation results keyed on a 9-field blake3-hashed composite (ruleset_hash, prompt/disambig versions, profile, content type, normalized context, term, candidate set hash, english anchor). 30-day TTL, 10000-entry cap, atomic writes (tempfile + rename), schema-versioned with backup-and-reset. Eliminates repeated LLM calls across sessions.
-- Incremental scan cache (BLAKE3-keyed, 24h TTL, 2000-entry cap) skips re-scanning unchanged files in lint-only CLI mode. Disabled for `--fix`, `--verify`, and stdin. MCP path does not use the cache (stateless by design).
+- Tier 3 is used by the Discord adapter only when a gray-zone decision is needed. The core accepts only candidates already supplied by the ruleset.
+- Incremental scan cache (BLAKE3-keyed, 24h TTL, 2000-entry cap) skips re-scanning unchanged files in lint-only CLI mode. Disabled for `--fix`, `--verify`, and stdin.
 - Built-in SC→TC converter (`s2t.rs` + `s2t_data.rs`) eliminates the OpenCC runtime dependency for the `convert` subcommand.
 - Anchor calibration (`translate.rs`) annotates ambiguous issues with `anchor_match: Option<bool>` (confirmed/unconfirmed/no-signal) via synonym table and LCP stem matching. Fails open on API error (severity preserved).
 
@@ -64,7 +63,6 @@ Run `make corpus` to print the metrics table locally.
 cargo test                             # all tests
 cargo test engine::scan                # specific module
 cargo test --test scanner-integration  # integration tests (scanner behavior)
-cargo test --test e2e-mcp              # E2E: JSON-RPC round-trip
 cargo test --test vocabulary-expansion # political nouns, IT terms, context clues
 cargo test --test cli-lint             # CLI: exit codes, formats, fix, SARIF, baseline
 cargo test --test anchor-benchmark -- --ignored  # anchor calibration (requires network)

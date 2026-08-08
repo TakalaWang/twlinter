@@ -185,10 +185,10 @@ mod tests {
         let c = converter();
         // STPhrases handles context-dependent multi-char mappings.
         // Note: 操作系统→操作系統 (char-level only, no TWPhrases).
-        // 作業系統 is a TWPhrases mapping that zhtw-mcp handles separately.
+        // 作業系統 is a TWPhrases mapping that zhtw-core handles separately.
         assert_eq!(c.convert("操作系统"), "操作系統");
         // 内存→內存 (char-level only). 記憶體 is a TWPhrases mapping
-        // handled by zhtw-mcp's cross_strait rules, not by s2t.
+        // handled by zhtw-core's cross_strait rules, not by s2t.
         assert_eq!(c.convert("内存"), "內存");
         // 一丝不挂→一絲不掛 (in STPhrases: phrase-level conversion).
         assert_eq!(c.convert("一丝不挂"), "一絲不掛");

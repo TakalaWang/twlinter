@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "zhtw-mcp Page Checker",
+  "name": "zhtw-core Page Checker",
   "description": "Validate visible page text for non-standard Traditional Chinese usage.",
   "version": "0.1.0",
   "permissions": ["activeTab", "scripting", "storage"],

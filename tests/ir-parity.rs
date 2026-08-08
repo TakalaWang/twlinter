@@ -10,9 +10,9 @@
 // After confirming parity, the old process_match_dispatch_legacy was deleted
 // (48.6).
 
-use zhtw_mcp::engine::scan::{ContentType, Scanner};
-use zhtw_mcp::rules::loader::load_embedded_ruleset;
-use zhtw_mcp::rules::ruleset::{PoliticalStance, Profile, RuleType, SpellingRule};
+use zhtw_core::engine::scan::{ContentType, Scanner};
+use zhtw_core::rules::loader::load_embedded_ruleset;
+use zhtw_core::rules::ruleset::{PoliticalStance, Profile, RuleType, SpellingRule};
 
 // ---------------------------------------------------------------------------
 // Helpers

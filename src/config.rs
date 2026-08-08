@@ -1,4 +1,4 @@
-// Project config file support (.zhtw-mcp.toml).
+// Project config file support (.zhtw-core.toml).
 //
 // Discovery: resolve once from cwd upward, stopping at VCS root (.git) or
 // filesystem root.  Apply globally to all files in the run.
@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 
 /// Config file name.
-const CONFIG_FILENAME: &str = ".zhtw-mcp.toml";
+const CONFIG_FILENAME: &str = ".zhtw-core.toml";
 
 /// Parsed project config.
 #[derive(Debug, Default, Deserialize)]
@@ -61,7 +61,7 @@ pub struct GlossaryConfig {
 }
 
 impl ProjectConfig {
-    /// Discover and parse the nearest .zhtw-mcp.toml.
+    /// Discover and parse the nearest .zhtw-core.toml.
     ///
     /// Walks from start_dir upward, stopping at a .git directory or
     /// filesystem root.  Returns None if no config file is found.
@@ -89,7 +89,7 @@ impl ProjectConfig {
     }
 }
 
-/// Walk from start upward looking for .zhtw-mcp.toml.
+/// Walk from start upward looking for .zhtw-core.toml.
 /// Stop at .git directory or filesystem root.
 fn find_config_file(start: &Path) -> Option<PathBuf> {
     let mut dir = start.to_path_buf();

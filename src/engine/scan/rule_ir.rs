@@ -586,7 +586,7 @@ pub fn inflate_spelling_issues(db: &CompiledSpellingDb, text: &str, issues: &mut
 }
 
 /// Like `inflate_spelling_issues` but skips context/english/context_clues
-/// when `offset_only` is true (MCP compact output path).  Saves ~3 Arc
+/// when `offset_only` is true (compact output path).  Saves ~3 Arc
 /// clones per surviving issue.
 pub fn inflate_spelling_issues_compact(db: &CompiledSpellingDb, text: &str, issues: &mut [Issue]) {
     inflate_spelling_issues_inner(db, text, issues, true);
@@ -782,7 +782,7 @@ pub fn compile_spelling_rules_filtered(
                     Ok(i) => i,
                     Err(_) => {
                         tracing::warn!(
-                            "[zhtw-mcp] clue index overflow (>{} unique clues); \
+                            "[zhtw-core] clue index overflow (>{} unique clues); \
                              remaining clues will be ignored",
                             u16::MAX
                         );
@@ -838,7 +838,7 @@ pub fn compile_spelling_rules_filtered(
             if let Some(ids) = slot {
                 if ids.len() > 32 {
                     tracing::warn!(
-                        "[zhtw-mcp] rule '{}' has {} {label} clues, \
+                        "[zhtw-core] rule '{}' has {} {label} clues, \
                          exceeds bitset capacity 32; truncating",
                         spelling_rules[i].from,
                         ids.len(),
@@ -869,7 +869,7 @@ pub fn compile_spelling_rules_filtered(
                         let clue = PositionalClue::parse(s);
                         if clue.is_none() {
                             tracing::warn!(
-                                "[zhtw-mcp] rule '{}': unrecognized positional clue '{}'",
+                                "[zhtw-core] rule '{}': unrecognized positional clue '{}'",
                                 rule.from,
                                 s
                             );

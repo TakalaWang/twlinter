@@ -1,14 +1,14 @@
 [package]
-name = "zhtw-mcp"
+name = "zhtw-core"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.91"
-description = "MCP server for Traditional Chinese (zh-TW) text linting and normalization"
+description = "Reusable Traditional Chinese (zh-TW) conversion core and Discord bot foundation"
 license = "MIT"
-repository = "https://github.com/sysprog21/zhtw-mcp"
-homepage = "https://github.com/sysprog21/zhtw-mcp"
+repository = "https://github.com/TakalaWang/zhtw-discord-bot"
+homepage = "https://github.com/TakalaWang/zhtw-discord-bot"
 categories = ["command-line-utilities", "text-processing", "internationalization"]
-keywords = ["mcp", "chinese", "linting", "traditional-chinese", "zh-tw"]
+keywords = ["chinese", "linting", "traditional-chinese", "zh-tw", "discord"]
 readme = "README.md"
 include = ["src/**/*", "assets/ruleset.json", "Cargo.toml", "LICENSE", "README.md", "rust-toolchain.toml"]
 
@@ -21,7 +21,8 @@ native = [
     "dep:tempfile",
     "dep:toml",
 ]
-async-transport = ["native"]
+gemini = ["native", "dep:ureq", "dep:urlencoding"]
+discord = ["native", "gemini", "dep:serenity", "dep:tokio"]
 browser-wasm = ["dep:console_error_panic_hook", "dep:wasm-bindgen"]
 translate = ["dep:ureq", "dep:urlencoding"]
 
@@ -29,9 +30,14 @@ translate = ["dep:ureq", "dep:urlencoding"]
 crate-type = ["rlib", "cdylib"]
 
 [[bin]]
-name = "zhtw-mcp"
+name = "zhtw-core"
 path = "src/main.rs"
 required-features = ["native"]
+
+[[bin]]
+name = "zhtw-discord-bot"
+path = "src/bin/discord-bot.rs"
+required-features = ["discord"]
 
 [dependencies]
 serde = { version = "1", features = ["derive", "rc"] }
@@ -56,6 +62,8 @@ fs2 = { version = "0.4", optional = true }
 postcard = { version = "1", features = ["alloc"] }
 console_error_panic_hook = { version = "0.1", optional = true }
 wasm-bindgen = { version = "0.2", optional = true }
+serenity = { version = "0.12.5", default-features = false, features = ["client", "gateway", "model", "rustls_backend"], optional = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"], optional = true }
 
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }

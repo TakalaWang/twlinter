@@ -57,7 +57,7 @@ use self::quotes::{fix_quote_pairing, validate_quote_hierarchy};
 ///
 /// Creating one of these and passing it to `scan_with_config_into` avoids
 /// repeated `Vec` allocations on the hot path.  Callers that process many
-/// documents in a loop (e.g. the MCP server) can keep a single
+/// documents in a loop can keep a single
 /// `ScratchSpace` alive across requests.
 ///
 /// All buffers are cleared (without deallocating) at the start of each
@@ -156,8 +156,8 @@ pub struct CoverageReport {
 
 /// Content type for determining exclusion strategy.
 ///
-/// Shared between CLI and MCP pipelines (20.4 deduplication).  Lives in the
-/// engine so both consumers can use the same scan_for_content_type method
+/// Shared between CLI and library pipelines (20.4 deduplication).  Lives in the
+/// engine so all consumers can use the same scan_for_content_type method
 /// without duplicating the dispatch logic.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ContentType {
@@ -172,7 +172,7 @@ pub enum ContentType {
 }
 
 impl ContentType {
-    /// Canonical string name matching the MCP/CLI parameter values.
+    /// Canonical string name used by CLI and library callers.
     pub fn name(self) -> &'static str {
         match self {
             ContentType::Plain => "plain",
@@ -707,7 +707,7 @@ fn punct_issue(offset: usize, found: &str, suggestion: &str, context: &str) -> I
 ///
 /// Combines content-pattern exclusions (URLs, paths, mentions) with
 /// structural exclusions appropriate to the content type and inline
-/// suppression markers.  Shared between CLI and MCP pipelines.
+/// suppression markers.  Shared between CLI and library pipelines.
 pub fn build_exclusions_for_content_type(text: &str, content_type: ContentType) -> Vec<ByteRange> {
     build_exclusions_for_content_type_with_options(text, content_type, MdScanOptions::default())
 }
@@ -1045,7 +1045,7 @@ impl Scanner {
 
     /// Scan text using the content-type-aware exclusion strategy.
     ///
-    /// Shared entry point for CLI and MCP pipelines (20.4 deduplication).
+    /// Shared entry point for CLI and library pipelines (20.4 deduplication).
     /// Dispatches to the appropriate scan method based on content type.
     pub fn scan_for_content_type(
         &self,

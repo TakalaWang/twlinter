@@ -156,7 +156,7 @@ def format_ruleset(data: dict[str, Any]) -> str:
 # Online verification helpers (--verify)
 # ---------------------------------------------------------------------------
 
-_HTTP_HEADERS = {"User-Agent": "zhtw-mcp-check/1.0"}
+_HTTP_HEADERS = {"User-Agent": "zhtw-core-check/1.0"}
 _RATE_LIMIT = 0.25  # seconds between requests
 # Bump when the lookup algorithm changes to invalidate stale entries.
 _CACHE_VERSION = 2
