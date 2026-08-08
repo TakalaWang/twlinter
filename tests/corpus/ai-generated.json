@@ -1,0 +1,208 @@
+{
+  "id": "ai_generated",
+  "label": "AI-generated zh-TW technical prose",
+  "profile": "base",
+  "detect_ai": true,
+  "mode": "direct",
+  "min_bytes": 51200,
+  "cases": [
+    {
+      "id": "ai_ops_1",
+      "repeat": 52,
+      "input": "值得注意的是這個軟件模組需要優化數據庫的性能,並把內存中的緩存數據同步到網絡節點。",
+      "expected_fixed": "這個軟體模組需要最佳化資料庫的效能，並把記憶體中的快取資料同步到網路節點。",
+      "expected_issues": [
+        { "found": "值得注意的是", "replace": "", "rule_type": "ai_style" },
+        { "found": "軟件", "replace": "軟體", "rule_type": "cross_strait" },
+        { "found": "優化", "replace": "最佳化", "rule_type": "cross_strait" },
+        { "found": "數據庫", "replace": "資料庫", "rule_type": "cross_strait" },
+        { "found": "性能", "replace": "效能", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "內存", "replace": "記憶體", "rule_type": "cross_strait" },
+        { "found": "緩存", "replace": "快取", "rule_type": "cross_strait" },
+        { "found": "數據", "replace": "資料", "rule_type": "cross_strait", "occurrence": 2 },
+        { "found": "網絡", "replace": "網路", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_video_1",
+      "repeat": 52,
+      "input": "總的來說，視頻會議服務會使用默認錄像模板,並在文檔頁面顯示錯誤信息。",
+      "expected_fixed": "總之，視訊會議服務會使用預設錄影範本，並在文件頁面顯示錯誤訊息。",
+      "expected_issues": [
+        { "found": "總的來說", "replace": "總之", "rule_type": "ai_style" },
+        { "found": "視頻會議", "replace": "視訊會議", "rule_type": "cross_strait" },
+        { "found": "默認", "replace": "預設", "rule_type": "cross_strait" },
+        { "found": "錄像", "replace": "錄影", "rule_type": "cross_strait" },
+        { "found": "模板", "replace": "範本", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "文檔", "replace": "文件", "rule_type": "cross_strait" },
+        { "found": "錯誤信息", "replace": "錯誤訊息", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_os_1",
+      "repeat": 52,
+      "input": "該操作系統提供鏈接檢查器,可分析進程記錄。",
+      "expected_fixed": "該作業系統提供連結檢查器，可分析行程記錄。",
+      "expected_issues": [
+        { "found": "操作系統", "replace": "作業系統", "rule_type": "cross_strait" },
+        { "found": "鏈接", "replace": "連結", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "進程", "replace": "行程", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_update_1",
+      "repeat": 52,
+      "input": "總的來說，軟件更新會通過鏈接檢查器驗證文檔引用,並把數據寫入緩存。",
+      "expected_fixed": "總之，軟體更新會透過連結檢查器驗證文件引用，並把資料寫入快取。",
+      "expected_issues": [
+        { "found": "總的來說", "replace": "總之", "rule_type": "ai_style" },
+        { "found": "軟件", "replace": "軟體", "rule_type": "cross_strait" },
+        { "found": "通過", "replace": "透過", "rule_type": "cross_strait" },
+        { "found": "鏈接", "replace": "連結", "rule_type": "cross_strait" },
+        { "found": "文檔", "replace": "文件", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "數據", "replace": "資料", "rule_type": "cross_strait" },
+        { "found": "緩存", "replace": "快取", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_log_1",
+      "repeat": 52,
+      "input": "值得注意的是操作系統報告會記錄默認網絡策略,並附上錯誤信息與文檔鏈接。",
+      "expected_fixed": "作業系統報告會記錄預設網路策略，並附上錯誤訊息與文件連結。",
+      "expected_issues": [
+        { "found": "值得注意的是", "replace": "", "rule_type": "ai_style" },
+        { "found": "操作系統", "replace": "作業系統", "rule_type": "cross_strait" },
+        { "found": "默認", "replace": "預設", "rule_type": "cross_strait" },
+        { "found": "網絡", "replace": "網路", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "錯誤信息", "replace": "錯誤訊息", "rule_type": "cross_strait" },
+        { "found": "文檔", "replace": "文件", "rule_type": "cross_strait" },
+        { "found": "鏈接", "replace": "連結", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_confusable_log",
+      "repeat": 30,
+      "input": "總的來說，伺服器的日誌記錄了系統錯誤，需要進行除錯。",
+      "expected_fixed": "總之，伺服器的日誌記錄了系統錯誤，需要進行除錯。",
+      "expected_issues": [
+        { "found": "總的來說", "replace": "總之", "rule_type": "ai_style" },
+        { "found": "日誌", "replace": "記錄檔", "rule_type": "confusable" }
+      ]
+    },
+    {
+      "id": "ai_confusable_opensource",
+      "repeat": 30,
+      "input": "值得一提的是，該軟體使用開源框架開發，並部署在雲端伺服器上。",
+      "expected_fixed": "該軟體使用開源框架開發，並部署在雲端伺服器上。",
+      "expected_issues": [
+        { "found": "值得一提的是，", "replace": "", "rule_type": "ai_style" },
+        { "found": "開源", "replace": "開放原始碼", "rule_type": "confusable" }
+      ]
+    },
+    {
+      "id": "ai_unfixable_filler",
+      "repeat": 30,
+      "input": "從某種角度來看，這個裝置驅動需要在核心模組中載入才能正常運作。",
+      "expected_fixed": "從某種角度來看，這個裝置驅動程式需要在核心模組中載入才能正常運作。",
+      "expected_issues": [
+        { "found": "從某種角度來看", "replace": "", "rule_type": "ai_style" },
+        { "found": "裝置驅動", "replace": "裝置驅動程式", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_confusable_address",
+      "repeat": 30,
+      "input": "不容忽視的是，記憶體地址的配置需要考慮系統安全性。",
+      "expected_fixed": "記憶體地址的配置需要考慮系統安全性。",
+      "expected_issues": [
+        { "found": "不容忽視的是，", "replace": "", "rule_type": "ai_style" },
+        { "found": "地址", "replace": "位址", "rule_type": "confusable" }
+      ]
+    },
+    {
+      "id": "ai_double_filler",
+      "repeat": 30,
+      "input": "在這個過程中，可以看到系統架構的依賴關係，需要進一步最佳化。",
+      "expected_fixed": "過程中，可以看到系統架構的依賴關係，需要進一步最佳化。",
+      "expected_issues": [
+        { "found": "在這個過程中", "replace": "過程中", "rule_type": "ai_style" },
+        { "found": "可以看到", "replace": "", "rule_type": "ai_style" }
+      ]
+    },
+    {
+      "id": "ai_filler_replace",
+      "repeat": 30,
+      "input": "因此我們可以看到，該程式的函式呼叫流程存在瓶頸。",
+      "expected_fixed": "因此，該程式的函式呼叫流程存在瓶頸。",
+      "expected_issues": [
+        { "found": "因此我們可以看到", "replace": "因此", "rule_type": "ai_style" }
+      ]
+    },
+    {
+      "id": "ai_driver_filler",
+      "repeat": 30,
+      "input": "需要注意的是，裝置驅動需要在核心模組中載入。",
+      "expected_fixed": "裝置驅動程式需要在核心模組中載入。",
+      "expected_issues": [
+        { "found": "需要注意的是，", "replace": "", "rule_type": "ai_style" },
+        { "found": "裝置驅動", "replace": "裝置驅動程式", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_heavy_cross_strait",
+      "repeat": 30,
+      "input": "更重要的是，操作系統應該提供更好的進程管理和內存分配策略。",
+      "expected_fixed": "作業系統應該提供更好的行程管理和記憶體配置策略。",
+      "expected_issues": [
+        { "found": "更重要的是，", "replace": "", "rule_type": "ai_style" },
+        { "found": "操作系統", "replace": "作業系統", "rule_type": "cross_strait" },
+        { "found": "進程管理", "replace": "行程管理", "rule_type": "cross_strait" },
+        { "found": "內存分配", "replace": "記憶體配置", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_mixed_confusable_cross",
+      "repeat": 30,
+      "input": "在程式碼中，循環遍歷數組並將緩存數據寫入日誌。",
+      "expected_fixed": "在程式碼中，循環走訪陣列並將快取資料寫入日誌。",
+      "expected_issues": [
+        { "found": "循環", "replace": "迴圈", "rule_type": "confusable" },
+        { "found": "遍歷", "replace": "走訪", "rule_type": "cross_strait" },
+        { "found": "數組", "replace": "陣列", "rule_type": "cross_strait" },
+        { "found": "緩存", "replace": "快取", "rule_type": "cross_strait" },
+        { "found": "數據", "replace": "資料", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_data_structure",
+      "repeat": 30,
+      "input": "在這種情況下，開發者需要將軟件中的數據結構從鏈表改為數組。",
+      "expected_fixed": "在這種情況下，開發者需要將軟體中的資料結構從鏈結串列改為陣列。",
+      "expected_issues": [
+        { "found": "在這種情況下", "replace": "", "rule_type": "ai_style" },
+        { "found": "軟件", "replace": "軟體", "rule_type": "cross_strait" },
+        { "found": "數據結構", "replace": "資料結構", "rule_type": "cross_strait" },
+        { "found": "鏈表", "replace": "鏈結串列", "rule_type": "cross_strait" },
+        { "found": "數組", "replace": "陣列", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "ai_algorithm",
+      "repeat": 30,
+      "input": "儘管存在這些挑戰，通過優化算法可以顯著提升系統性能。",
+      "expected_fixed": "儘管存在這些挑戰，透過最佳化演算法可以顯著提升系統效能。",
+      "expected_issues": [
+        { "found": "儘管存在這些挑戰", "replace": "", "rule_type": "ai_style" },
+        { "found": "通過", "replace": "透過", "rule_type": "cross_strait" },
+        { "found": "優化", "replace": "最佳化", "rule_type": "cross_strait" },
+        { "found": "算法", "replace": "演算法", "rule_type": "cross_strait" },
+        { "found": "性能", "replace": "效能", "rule_type": "cross_strait" }
+      ]
+    }
+  ]
+}

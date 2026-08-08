@@ -1,0 +1,135 @@
+{
+  "id": "native_zh_tw",
+  "label": "Native zh-TW technical prose",
+  "profile": "base",
+  "mode": "direct",
+  "min_bytes": 51200,
+  "cases": [
+    {
+      "id": "native_ops_1",
+      "repeat": 50,
+      "input": "這個軟體模組需要最佳化資料庫的效能，並把記憶體中的快取資料同步到網路節點。",
+      "expected_fixed": "這個軟體模組需要最佳化資料庫的效能，並把記憶體中的快取資料同步到網路節點。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_video_1",
+      "repeat": 50,
+      "input": "視訊會議服務會使用預設錄影範本，並在文件頁面顯示錯誤訊息。",
+      "expected_fixed": "視訊會議服務會使用預設錄影範本，並在文件頁面顯示錯誤訊息。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_os_1",
+      "repeat": 50,
+      "input": "該作業系統提供連結檢查器，可分析行程記錄。",
+      "expected_fixed": "該作業系統提供連結檢查器，可分析行程記錄。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_update_1",
+      "repeat": 50,
+      "input": "軟體更新會透過連結檢查器驗證文件引用，並把資料寫入快取。",
+      "expected_fixed": "軟體更新會透過連結檢查器驗證文件引用，並把資料寫入快取。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_log_1",
+      "repeat": 50,
+      "input": "作業系統報告會記錄預設網路策略，並附上錯誤訊息與文件連結。",
+      "expected_fixed": "作業系統報告會記錄預設網路策略，並附上錯誤訊息與文件連結。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_cycle_no_code",
+      "repeat": 30,
+      "input": "經濟循環理論指出景氣會反覆波動，政府應適時調整財政政策。",
+      "expected_fixed": "經濟循環理論指出景氣會反覆波動，政府應適時調整財政政策。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_address_postal",
+      "repeat": 30,
+      "input": "請將郵件寄到這個地址：臺北市信義區松仁路七號。",
+      "expected_fixed": "請將郵件寄到這個地址：臺北市信義區松仁路七號。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_diary_literary",
+      "repeat": 30,
+      "input": "日誌體裁是古典文學的重要形式，許多學者曾深入研究其敘事結構。",
+      "expected_fixed": "日誌體裁是古典文學的重要形式，許多學者曾深入研究其敘事結構。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_drive_verb",
+      "repeat": 30,
+      "input": "電動車驅動全球產業轉型，帶來前所未有的機遇與挑戰。",
+      "expected_fixed": "電動車驅動全球產業轉型，帶來前所未有的機遇與挑戰。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_opensource_finance",
+      "repeat": 30,
+      "input": "開源節流是企業經營的基本原則，必須同時開拓營收和控制成本。",
+      "expected_fixed": "開源節流是企業經營的基本原則，必須同時開拓營收和控制成本。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_math_function",
+      "repeat": 30,
+      "input": "函數分析是大學數學系的核心課程，涵蓋連續性與極限理論。",
+      "expected_fixed": "函數分析是大學數學系的核心課程，涵蓋連續性與極限理論。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_semiconductor",
+      "repeat": 30,
+      "input": "臺灣的半導體產業在全球供應鏈中扮演關鍵角色，技術領先各國。",
+      "expected_fixed": "臺灣的半導體產業在全球供應鏈中扮演關鍵角色，技術領先各國。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_func_library",
+      "repeat": 30,
+      "input": "程式設計師使用函式庫來加速開發流程，減少重複撰寫程式碼的時間。",
+      "expected_fixed": "程式設計師使用函式庫來加速開發流程，減少重複撰寫程式碼的時間。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_ai_education",
+      "repeat": 30,
+      "input": "這項研究探討了人工智慧對教育的長遠影響，並提出具體建議。",
+      "expected_fixed": "這項研究探討了人工智慧對教育的長遠影響，並提出具體建議。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_situation_phrase",
+      "repeat": 30,
+      "input": "部署流程若出現錯誤，維運小組會立即還原版本並通知相關團隊。",
+      "expected_fixed": "部署流程若出現錯誤，維運小組會立即還原版本並通知相關團隊。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_process_phrase",
+      "repeat": 30,
+      "input": "跨部門協作讓整個交付流程加速，每週的檢討會議也能聚焦真正的瓶頸。",
+      "expected_fixed": "跨部門協作讓整個交付流程加速，每週的檢討會議也能聚焦真正的瓶頸。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_mixed_cjk_latin",
+      "repeat": 30,
+      "input": "使用 Python 開發的 API 伺服器已部署至 AWS 雲端環境。",
+      "expected_fixed": "使用 Python 開發的 API 伺服器已部署至 AWS 雲端環境。",
+      "expected_issues": []
+    },
+    {
+      "id": "native_database_tw",
+      "repeat": 30,
+      "input": "資料庫管理系統負責處理交易、索引建立和查詢最佳化等工作。",
+      "expected_fixed": "資料庫管理系統負責處理交易、索引建立和查詢最佳化等工作。",
+      "expected_issues": []
+    }
+  ]
+}

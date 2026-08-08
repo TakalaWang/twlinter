@@ -1,0 +1,54 @@
+{
+  "id": "deterministic_regression",
+  "label": "Deterministic Tier 1 corpus: fully solvable via rigid rules, no LLM needed",
+  "profile": "base",
+  "mode": "direct",
+  "min_bytes": 1024,
+  "cases": [
+    {
+      "id": "det_cross_strait_1",
+      "repeat": 1,
+      "input": "用户可以在信息中查看软件的默认配置。",
+      "scan_text": "用戶可以在資訊中查看軟體的默認配置。",
+      "expected_fixed": "使用者可以在資訊中檢視軟體的預設配置。",
+      "expected_issues": [
+        { "found": "用戶", "replace": "使用者", "rule_type": "cross_strait" },
+        { "found": "查看", "replace": "檢視", "rule_type": "cross_strait" },
+        { "found": "默認", "replace": "預設", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "det_punctuation_1",
+      "repeat": 1,
+      "input": "這是一個測試,請注意!",
+      "expected_fixed": "這是一個測試，請注意！",
+      "expected_issues": [
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "!", "replace": "！", "rule_type": "punctuation" }
+      ]
+    },
+    {
+      "id": "det_variant_strict",
+      "repeat": 1,
+      "input": "這個介面已經修正了。",
+      "expected_fixed": "這個介面已經修正了。",
+      "expected_issues": []
+    },
+    {
+      "id": "det_clean_tw_1",
+      "repeat": 1,
+      "input": "作業系統的記憶體管理模組已經最佳化。",
+      "expected_fixed": "作業系統的記憶體管理模組已經最佳化。",
+      "expected_issues": []
+    },
+    {
+      "id": "det_mixed_punct_2",
+      "repeat": 1,
+      "input": "请检查这个链接(http://example.com),然后更新数据库.",
+      "expected_fixed": "請檢查這個連結(http://example.com),然後更新數據庫.",
+      "expected_issues": [
+        { "found": "鏈接", "replace": "連結", "rule_type": "cross_strait" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "editorial_regression",
+  "label": "Editorial corpus: AI filler, passive voice, hedging language",
+  "profile": "base",
+  "detect_ai": true,
+  "mode": "direct",
+  "min_bytes": 512,
+  "cases": [
+    {
+      "id": "edit_no_ai_1",
+      "repeat": 1,
+      "input": "本系統使用分散式架構處理大量資料。",
+      "expected_fixed": "本系統使用分散式架構處理大量資料。",
+      "expected_issues": []
+    },
+    {
+      "id": "edit_clean_prose",
+      "repeat": 1,
+      "input": "記憶體管理模組負責分配和回收系統資源。",
+      "expected_fixed": "記憶體管理模組負責分配和回收系統資源。",
+      "expected_issues": []
+    }
+  ]
+}

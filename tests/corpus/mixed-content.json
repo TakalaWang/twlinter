@@ -1,0 +1,42 @@
+{
+  "id": "mixed_content_regression",
+  "label": "Mixed-content corpus: markdown tables, code blocks, CJK-Latin interleaving",
+  "profile": "base",
+  "mode": "direct",
+  "min_bytes": 512,
+  "cases": [
+    {
+      "id": "mix_code_block",
+      "repeat": 1,
+      "input": "```\nconst x = 1;\n```\n\n用户需要配置环境变量。",
+      "scan_text": "```\nconst x = 1;\n```\n\n用户需要配置環境變數。",
+      "expected_fixed": "```\nconst x = 1;\n```\n\n使用者需要組態環境變數。",
+      "expected_issues": [
+        { "found": "用户", "replace": "使用者", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "mix_inline_code",
+      "repeat": 1,
+      "input": "使用 `malloc` 函数分配記憶體。",
+      "expected_fixed": "使用 `malloc` 函式分配記憶體。",
+      "expected_issues": [
+        { "found": "函数", "replace": "函式", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "mix_cjk_latin_spacing",
+      "repeat": 1,
+      "input": "安裝Docker容器並設定MongoDB資料庫。",
+      "expected_fixed": "安裝Docker容器並設定MongoDB資料庫。",
+      "expected_issues": []
+    },
+    {
+      "id": "mix_markdown_table",
+      "repeat": 1,
+      "input": "| 名稱 | 說明 |\n|------|------|\n| 記憶體 | 系統資源 |",
+      "expected_fixed": "| 名稱 | 說明 |\n|------|------|\n| 記憶體 | 系統資源 |",
+      "expected_issues": []
+    }
+  ]
+}

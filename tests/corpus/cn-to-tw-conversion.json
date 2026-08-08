@@ -1,0 +1,179 @@
+{
+  "id": "cn_to_tw_conversion",
+  "label": "zh-CN text after SC->TC conversion",
+  "profile": "base",
+  "mode": "s2t",
+  "min_bytes": 51200,
+  "cases": [
+    {
+      "id": "cn_ops_1",
+      "repeat": 80,
+      "input": "软件模组需要优化数据库的性能,并把内存中的缓存数据同步到网络节点。",
+      "scan_text": "軟件模組需要優化數據庫的性能,並把內存中的緩存數據同步到網絡節點。",
+      "expected_fixed": "軟體模組需要最佳化資料庫的效能，並把記憶體中的快取資料同步到網路節點。",
+      "expected_issues": [
+        { "found": "軟件", "replace": "軟體", "rule_type": "cross_strait" },
+        { "found": "優化", "replace": "最佳化", "rule_type": "cross_strait" },
+        { "found": "數據庫", "replace": "資料庫", "rule_type": "cross_strait" },
+        { "found": "性能", "replace": "效能", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "內存", "replace": "記憶體", "rule_type": "cross_strait" },
+        { "found": "緩存", "replace": "快取", "rule_type": "cross_strait" },
+        { "found": "數據", "replace": "資料", "rule_type": "cross_strait", "occurrence": 2 },
+        { "found": "網絡", "replace": "網路", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_video_1",
+      "repeat": 80,
+      "input": "视频会议服务会使用默认录像模板,并在文档页面显示错误信息。",
+      "scan_text": "視頻會議服務會使用默認錄像模板,並在文檔頁面顯示錯誤信息。",
+      "expected_fixed": "視訊會議服務會使用預設錄影範本，並在文件頁面顯示錯誤訊息。",
+      "expected_issues": [
+        { "found": "視頻會議", "replace": "視訊會議", "rule_type": "cross_strait" },
+        { "found": "默認", "replace": "預設", "rule_type": "cross_strait" },
+        { "found": "錄像", "replace": "錄影", "rule_type": "cross_strait" },
+        { "found": "模板", "replace": "範本", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "文檔", "replace": "文件", "rule_type": "cross_strait" },
+        { "found": "錯誤信息", "replace": "錯誤訊息", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_os_1",
+      "repeat": 80,
+      "input": "操作系统提供链接检查器,可分析进程记录。",
+      "scan_text": "操作系統提供鏈接檢查器,可分析進程記錄。",
+      "expected_fixed": "作業系統提供連結檢查器，可分析行程記錄。",
+      "expected_issues": [
+        { "found": "操作系統", "replace": "作業系統", "rule_type": "cross_strait" },
+        { "found": "鏈接", "replace": "連結", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "進程", "replace": "行程", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_update_1",
+      "repeat": 80,
+      "input": "软件更新会通过链接检查器验证文档引用,并把数据写入缓存。",
+      "scan_text": "軟件更新會通過鏈接檢查器驗證文檔引用,並把數據寫入緩存。",
+      "expected_fixed": "軟體更新會透過連結檢查器驗證文件引用，並把資料寫入快取。",
+      "expected_issues": [
+        { "found": "軟件", "replace": "軟體", "rule_type": "cross_strait" },
+        { "found": "通過", "replace": "透過", "rule_type": "cross_strait" },
+        { "found": "鏈接", "replace": "連結", "rule_type": "cross_strait" },
+        { "found": "文檔", "replace": "文件", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "數據", "replace": "資料", "rule_type": "cross_strait" },
+        { "found": "緩存", "replace": "快取", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_log_1",
+      "repeat": 80,
+      "input": "操作系统报告会记录默认网络策略,并附上错误信息与文档链接。",
+      "scan_text": "操作系統報告會記錄默認網絡策略,並附上錯誤信息與文檔鏈接。",
+      "expected_fixed": "作業系統報告會記錄預設網路策略，並附上錯誤訊息與文件連結。",
+      "expected_issues": [
+        { "found": "操作系統", "replace": "作業系統", "rule_type": "cross_strait" },
+        { "found": "默認", "replace": "預設", "rule_type": "cross_strait" },
+        { "found": "網絡", "replace": "網路", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "錯誤信息", "replace": "錯誤訊息", "rule_type": "cross_strait" },
+        { "found": "文檔", "replace": "文件", "rule_type": "cross_strait" },
+        { "found": "鏈接", "replace": "連結", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_server_log",
+      "repeat": 55,
+      "input": "服务器日志记录了默认网络配置的变更。",
+      "scan_text": "服務器日誌記錄了默認網絡配置的變更。",
+      "expected_fixed": "伺服器日誌記錄了預設網路配置的變更。",
+      "expected_issues": [
+        { "found": "服務器", "replace": "伺服器", "rule_type": "cross_strait" },
+        { "found": "日誌", "replace": "記錄檔", "rule_type": "confusable" },
+        { "found": "默認", "replace": "預設", "rule_type": "cross_strait" },
+        { "found": "網絡", "replace": "網路", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_thread_sched",
+      "repeat": 55,
+      "input": "进程调度器管理线程和内存分配策略。",
+      "scan_text": "進程調度器管理線程和內存分配策略。",
+      "expected_fixed": "行程排程器管理執行緒和記憶體配置策略。",
+      "expected_issues": [
+        { "found": "進程", "replace": "行程", "rule_type": "cross_strait" },
+        { "found": "調度", "replace": "排程", "rule_type": "cross_strait" },
+        { "found": "線程", "replace": "執行緒", "rule_type": "cross_strait" },
+        { "found": "內存分配", "replace": "記憶體配置", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_opensource_algo",
+      "repeat": 55,
+      "input": "开源软件项目使用了递归算法来优化性能。",
+      "scan_text": "開源軟件項目使用了遞歸算法來優化性能。",
+      "expected_fixed": "開源軟體項目使用了遞迴演算法來最佳化效能。",
+      "expected_issues": [
+        { "found": "開源", "replace": "開放原始碼", "rule_type": "confusable" },
+        { "found": "軟件", "replace": "軟體", "rule_type": "cross_strait" },
+        { "found": "項目", "replace": "專案", "rule_type": "cross_strait" },
+        { "found": "遞歸", "replace": "遞迴", "rule_type": "cross_strait" },
+        { "found": "算法", "replace": "演算法", "rule_type": "cross_strait" },
+        { "found": "優化", "replace": "最佳化", "rule_type": "cross_strait" },
+        { "found": "性能", "replace": "效能", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_vm_driver",
+      "repeat": 55,
+      "input": "虚拟机的驱动程序和硬件接口需要更新。",
+      "scan_text": "虛擬機的驅動程序和硬件接口需要更新。",
+      "expected_fixed": "虛擬機器的驅動程式和硬體接口需要更新。",
+      "expected_issues": [
+        { "found": "虛擬機", "replace": "虛擬機器", "rule_type": "cross_strait" },
+        { "found": "驅動程序", "replace": "驅動程式", "rule_type": "cross_strait" },
+        { "found": "硬件", "replace": "硬體", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_db_index",
+      "repeat": 55,
+      "input": "数据库索引可以显著提升查询性能,但会增加内存占用。",
+      "scan_text": "數據庫索引可以顯著提升查詢性能,但會增加內存佔用。",
+      "expected_fixed": "資料庫索引可以顯著提升查詢效能，但會增加記憶體佔用。",
+      "expected_issues": [
+        { "found": "數據庫", "replace": "資料庫", "rule_type": "cross_strait" },
+        { "found": "性能", "replace": "效能", "rule_type": "cross_strait" },
+        { "found": ",", "replace": "，", "rule_type": "punctuation" },
+        { "found": "內存", "replace": "記憶體", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_debugger",
+      "repeat": 55,
+      "input": "开发者通过调试器来分析程序中的内存泄漏问题。",
+      "scan_text": "開發者通過調試器來分析程序中的內存洩漏問題。",
+      "expected_fixed": "開發者透過除錯器來分析程序中的記憶體洩漏問題。",
+      "expected_issues": [
+        { "found": "通過", "replace": "透過", "rule_type": "cross_strait" },
+        { "found": "調試器", "replace": "除錯器", "rule_type": "cross_strait" },
+        { "found": "程序", "replace": "程式", "rule_type": "cross_strait" },
+        { "found": "內存", "replace": "記憶體", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "cn_cloud",
+      "repeat": 55,
+      "input": "云计算平台提供了弹性的虚拟机和容器服务。",
+      "scan_text": "雲計算平臺提供了彈性的虛擬機和容器服務。",
+      "expected_fixed": "雲端運算平臺提供了彈性的虛擬機器和容器服務。",
+      "expected_issues": [
+        { "found": "雲計算", "replace": "雲端運算", "rule_type": "cross_strait" },
+        { "found": "虛擬機", "replace": "虛擬機器", "rule_type": "cross_strait" }
+      ]
+    }
+  ]
+}

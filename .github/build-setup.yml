@@ -1,0 +1,8 @@
+- name: Set up Python
+  uses: actions/setup-python@v6
+  with:
+    python-version: "3.x"
+- name: Generate s2t_data.rs
+  run: |
+    python3 scripts/gen-s2t-tables.py
+    rustfmt src/engine/s2t_data.rs

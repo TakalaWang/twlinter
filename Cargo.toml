@@ -1,0 +1,109 @@
+[package]
+name = "zhtw-mcp"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.91"
+description = "MCP server for Traditional Chinese (zh-TW) text linting and normalization"
+license = "MIT"
+repository = "https://github.com/sysprog21/zhtw-mcp"
+homepage = "https://github.com/sysprog21/zhtw-mcp"
+categories = ["command-line-utilities", "text-processing", "internationalization"]
+keywords = ["mcp", "chinese", "linting", "traditional-chinese", "zh-tw"]
+readme = "README.md"
+include = ["src/**/*", "assets/ruleset.json", "Cargo.toml", "LICENSE", "README.md", "rust-toolchain.toml"]
+
+[features]
+default = ["native", "translate"]
+native = [
+    "dep:dirs",
+    "dep:fs2",
+    "dep:rayon",
+    "dep:tempfile",
+    "dep:toml",
+]
+async-transport = ["native"]
+browser-wasm = ["dep:console_error_panic_hook", "dep:wasm-bindgen"]
+translate = ["dep:ureq", "dep:urlencoding"]
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[[bin]]
+name = "zhtw-mcp"
+path = "src/main.rs"
+required-features = ["native"]
+
+[dependencies]
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"
+aho-corasick = "1"
+daachorse = "1"
+regex = "1"
+blake3 = "1"
+rayon = { version = "1", optional = true }
+anyhow = "1"
+unicode-normalization = "0.1"
+pulldown-cmark = { version = "0.13", default-features = false }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "registry"] }
+dirs = { version = "5.0", optional = true }
+tempfile = { version = "3.0", optional = true }
+toml = { version = "0.8", optional = true }
+ureq = { version = "3", optional = true }
+urlencoding = { version = "2", optional = true }
+rustc-hash = "2"
+fs2 = { version = "0.4", optional = true }
+postcard = { version = "1", features = ["alloc"] }
+console_error_panic_hook = { version = "0.1", optional = true }
+wasm-bindgen = { version = "0.2", optional = true }
+
+[build-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+postcard = { version = "1", features = ["alloc"] }
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false }
+
+[[bench]]
+name = "scanner"
+harness = false
+
+[[bench]]
+name = "startup"
+harness = false
+
+[profile.release]
+lto = true
+strip = true
+
+# Config for CI release builds via cargo-dist
+[profile.dist]
+inherits = "release"
+
+[workspace.metadata.dist]
+cargo-dist-version = "0.31.0"
+ci = "github"
+installers = ["shell", "powershell"]
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+    "aarch64-unknown-linux-gnu",
+    "aarch64-unknown-linux-musl",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+]
+unix-archive = ".tar.gz"
+checksum = "sha256"
+github-build-setup = "../build-setup.yml"
+pr-run-mode = "skip"
+plan-jobs = ["./main"]
+
+[workspace.metadata.dist.github-custom-runners.aarch64-unknown-linux-gnu]
+runner = "ubuntu-24.04"
+host = "x86_64-unknown-linux-gnu"
+
+[workspace.metadata.dist.github-custom-runners.aarch64-unknown-linux-musl]
+runner = "ubuntu-24.04"
+host = "x86_64-unknown-linux-gnu"

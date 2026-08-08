@@ -1,0 +1,34 @@
+{
+  "id": "ambiguous_regression",
+  "label": "Ambiguous term corpus: polysemous terms requiring Tier 2/3 disambiguation",
+  "profile": "base",
+  "mode": "direct",
+  "min_bytes": 512,
+  "cases": [
+    {
+      "id": "amb_process_computing",
+      "repeat": 1,
+      "input": "作業系統的進程排程器管理CPU執行緒分配。",
+      "expected_fixed": "作業系統的行程排程器管理 CPU 執行緒分配。",
+      "expected_issues": [
+        { "found": "進程", "replace": "行程", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "amb_render_graphics",
+      "repeat": 1,
+      "input": "GPU渲染引擎支持即時光線追蹤。",
+      "expected_fixed": "GPU算繪引擎支持即時光線追蹤。",
+      "expected_issues": [
+        { "found": "渲染", "replace": "算繪", "rule_type": "cross_strait" }
+      ]
+    },
+    {
+      "id": "amb_clean_tw_process",
+      "repeat": 1,
+      "input": "學習的進程需要耐心和毅力。",
+      "expected_fixed": "學習的進程需要耐心和毅力。",
+      "expected_issues": []
+    }
+  ]
+}

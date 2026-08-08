@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: "ci-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install Rust toolchain
+      run: rustup toolchain install stable --profile minimal --component rustfmt,clippy
+
+    - name: Rust cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        prefix-key: "v1-rust"
+        shared-key: ${{ matrix.os }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.x"
+
+    - name: make check
+      run: make check
+
+  check-size:
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install Rust toolchain
+      run: rustup toolchain install stable --profile minimal
+
+    - name: Rust cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        prefix-key: "v1-rust"
+        shared-key: "ubuntu-24.04"
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.x"
+
+    - name: make check-size
+      run: make check-size
