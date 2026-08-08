@@ -85,6 +85,7 @@ impl EventHandler for Handler {
         if let Some(reply) = reply {
             let outbound = CreateMessage::new()
                 .content(reply)
+                .reference_message(&message)
                 .allowed_mentions(CreateAllowedMentions::new());
             if let Err(error) = message.channel_id.send_message(&ctx.http, outbound).await {
                 tracing::warn!(%error, "failed to send Discord reply");

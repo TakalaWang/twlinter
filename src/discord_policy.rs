@@ -7,6 +7,7 @@ use crate::llm::ProtectedSpan;
 
 const DISCORD_BODY_LIMIT: usize = 1_900;
 const OVERSIZE_REPLY: &str = "改寫內容超過 Discord 長度限制，未自動回覆。";
+const REPLY_PREFIX: &str = "You may want to say:";
 
 pub fn automatic_reply(result: &CoreResult) -> Option<String> {
     if !result.changed || result.text.is_empty() {
@@ -15,14 +16,14 @@ pub fn automatic_reply(result: &CoreResult) -> Option<String> {
     if result.text.chars().count() > DISCORD_BODY_LIMIT {
         return Some(OVERSIZE_REPLY.to_string());
     }
-    Some(format!("建議改成：\n{}", result.text))
+    Some(format!("{REPLY_PREFIX}\n{}", result.text))
 }
 
 pub fn rewrite_reply(text: &str) -> String {
     if text.chars().count() > DISCORD_BODY_LIMIT {
         return OVERSIZE_REPLY.to_string();
     }
-    format!("建議改成：\n{text}")
+    format!("{REPLY_PREFIX}\n{text}")
 }
 
 pub fn rewrite_request(

@@ -26,3 +26,11 @@ fn rewrite_reply_is_bounded_for_discord() {
 
     assert_eq!(reply, "改寫內容超過 Discord 長度限制，未自動回覆。");
 }
+
+#[test]
+fn rewrite_reply_uses_the_requested_prefix() {
+    assert_eq!(
+        rewrite_reply("這是一句話"),
+        "You may want to say:\n這是一句話"
+    );
+}
