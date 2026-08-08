@@ -267,7 +267,7 @@ async fn main() -> Result<()> {
     let gemini = std::env::var("GEMINI_API_KEY").ok().map(|key| {
         GeminiClient::new(
             key,
-            std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-2.5-flash".to_string()),
+            std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-3.5-flash-lite".to_string()),
         )
     });
     let engine = Arc::new(CoreEngine::from_embedded(CoreOptions::default())?);

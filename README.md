@@ -120,7 +120,7 @@ the Discord Developer Portal before starting the bot.
 ```bash
 export DISCORD_TOKEN="..."
 export GEMINI_API_KEY="..."       # optional
-export GEMINI_MODEL="gemini-2.5-flash"
+export GEMINI_MODEL="gemini-3.5-flash-lite"
 export TWLINTER_CHANNELS_FILE="twlinter-channels.json"
 
 cargo run --release --features discord --bin twlinter-discord
