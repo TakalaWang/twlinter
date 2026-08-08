@@ -10,7 +10,7 @@ homepage = "https://github.com/TakalaWang/twlinter"
 categories = ["command-line-utilities", "text-processing", "internationalization"]
 keywords = ["chinese", "linting", "traditional-chinese", "zh-tw", "discord"]
 readme = "README.md"
-include = ["src/**/*", "assets/ruleset.json", "Cargo.toml", "LICENSE", "README.md", "rust-toolchain.toml"]
+include = ["src/**/*", "assets/ruleset.json", "Cargo.toml", "LICENSE", "LICENSES/Apache-2.0.txt", "README.md", "THIRD-PARTY-NOTICES.md", "rust-toolchain.toml"]
 
 [features]
 default = ["native", "translate"]
@@ -98,8 +98,6 @@ targets = [
     "x86_64-unknown-linux-musl",
     "aarch64-unknown-linux-gnu",
     "aarch64-unknown-linux-musl",
-    "x86_64-apple-darwin",
-    "aarch64-apple-darwin",
     "x86_64-pc-windows-msvc",
 ]
 unix-archive = ".tar.gz"
