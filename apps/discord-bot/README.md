@@ -19,9 +19,10 @@ cargo run --release --features discord --bin twlinter-discord
 ```
 
 `GEMINI_API_KEY` may be omitted. Without it, deterministic corrections still
-work and unresolved context remains unchanged. The bot prints the complete
-invite URL after connecting. Settings default to the platform config directory
-and can be overridden with `TWLINTER_CONFIG_FILE`.
+work and unresolved context remains unchanged. Disable `Public Bot` in the
+Discord Developer Portal and add the bot only to approved servers through a
+private workflow; no invitation link is published here. Settings default to
+the platform config directory and can be overridden with `TWLINTER_CONFIG_FILE`.
 
 After the bot connects, a server administrator uses these commands in the
 channel where the bot should operate:

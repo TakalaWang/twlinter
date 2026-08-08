@@ -129,9 +129,9 @@ cargo run --release --features discord --bin twlinter-discord
 Without `GEMINI_API_KEY`, deterministic and locally resolved corrections still
 work; unresolved ambiguous terms remain unchanged. With Gemini configured,
 messages that need correction are rewritten automatically after the channel is
-enabled with `/twlinter enable`. The bot prints the complete invite URL in its
-ready log; it uses the bot's actual application ID, the `bot` and
-`applications.commands` scopes, and only read/send message permissions.
+enabled with `/twlinter enable`. In the Discord Developer Portal, disable
+`Public Bot`; add the bot only to approved servers through a private workflow.
+No invitation link or application ID is published in this repository.
 
 Server administrators can use:
 

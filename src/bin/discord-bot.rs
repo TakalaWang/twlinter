@@ -13,8 +13,7 @@ use serenity::async_trait;
 
 use twlinter::core::{CoreAnalysis, CoreEngine, CoreOptions};
 use twlinter::discord_config::{
-    invite_url, set_feature, spelling_rule, ChannelConfig, DiscordConfig, DiscordLinter,
-    ServerConfig,
+    set_feature, spelling_rule, ChannelConfig, DiscordConfig, DiscordLinter, ServerConfig,
 };
 use twlinter::discord_policy::{automatic_reply, rewrite_is_safe, rewrite_reply, rewrite_request};
 use twlinter::engine::disambig::DisambigStats;
@@ -130,11 +129,7 @@ impl EventHandler for Handler {
         for guild in &ready.guilds {
             self.register_configuration_command(&ctx, guild.id).await;
         }
-        tracing::info!(
-            user = %ready.user.name,
-            invite = %invite_url(ready.user.id.get()),
-            "Discord bot connected"
-        );
+        tracing::info!(user = %ready.user.name, "Discord bot connected");
     }
 
     async fn guild_create(&self, ctx: Context, guild: serenity::all::Guild, _is_new: Option<bool>) {

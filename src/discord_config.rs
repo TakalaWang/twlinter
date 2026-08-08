@@ -325,12 +325,6 @@ pub fn feature_name(feature: Feature) -> &'static str {
     }
 }
 
-pub fn invite_url(client_id: u64) -> String {
-    format!(
-        "https://discord.com/oauth2/authorize?client_id={client_id}&scope=bot%20applications.commands&permissions=68608"
-    )
-}
-
 pub fn set_feature(features: &mut FeatureSet, name: &str, enabled: bool) -> Result<()> {
     match name {
         "terminology" => features.terminology = enabled,
@@ -418,13 +412,5 @@ mod tests {
             .unwrap();
         assert_eq!(output.output.issues.len(), 1);
         assert_eq!(output.output.issues[0].suggestions[0], "測試用語");
-    }
-
-    #[test]
-    fn invite_url_uses_bot_id_and_required_scopes() {
-        assert_eq!(
-            invite_url(123),
-            "https://discord.com/oauth2/authorize?client_id=123&scope=bot%20applications.commands&permissions=68608"
-        );
     }
 }
