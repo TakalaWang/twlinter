@@ -121,7 +121,7 @@ the Discord Developer Portal before starting the bot.
 export DISCORD_TOKEN="..."
 export GEMINI_API_KEY="..."       # optional
 export GEMINI_MODEL="gemini-3.5-flash-lite"
-export TWLINTER_CHANNELS_FILE="twlinter-channels.json"
+export TWLINTER_CONFIG_FILE="twlinter-discord.json"
 
 cargo run --release --features discord --bin twlinter-discord
 ```
@@ -129,9 +129,22 @@ cargo run --release --features discord --bin twlinter-discord
 Without `GEMINI_API_KEY`, deterministic and locally resolved corrections still
 work; unresolved ambiguous terms remain unchanged. With Gemini configured,
 messages that need correction are rewritten automatically after the channel is
-enabled with `/twlinter enable`. `/twlinter disable` stops the current channel,
-and `/twlinter status` lists the registered channels. These are administration
-commands only; users do not need a rewrite command.
+enabled with `/twlinter enable`. The bot prints the complete invite URL in its
+ready log; it uses the bot's actual application ID, the `bot` and
+`applications.commands` scopes, and only read/send message permissions.
+
+Server administrators can use:
+
+- `/twlinter enable` or `/twlinter disable` — change tracking for the current channel only;
+- `/twlinter feature` — enable or disable `terminology`, `spacing`, `case_dictionary`, or `custom_rules` for the whole server;
+- `/twlinter rule` — add a server-level terminology rule;
+- `/twlinter case` — add a server-level proper-noun casing rule;
+- `/twlinter status` — show server features and tracked channels.
+
+Simplified-to-Traditional conversion is included in `terminology`. Feature
+selection is server-wide; channels only opt into or out of tracking. Settings
+are stored in JSON at `TWLINTER_CONFIG_FILE` (or the platform config directory
+when unset).
 
 See [apps/discord-bot/README.md](apps/discord-bot/README.md) for deployment
 notes and [apps/discord-bot/config.example.env](apps/discord-bot/config.example.env)

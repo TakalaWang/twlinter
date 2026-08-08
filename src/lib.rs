@@ -9,7 +9,7 @@ pub mod config;
 #[cfg(feature = "native")]
 pub mod core;
 #[cfg(feature = "discord")]
-pub mod discord_channels;
+pub mod discord_config;
 #[cfg(feature = "discord")]
 pub mod discord_policy;
 pub mod engine;

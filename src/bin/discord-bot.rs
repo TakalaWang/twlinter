@@ -4,25 +4,31 @@ use std::sync::Arc;
 
 use anyhow::{Context as _, Result};
 use serenity::all::{
-    Client, CommandInteraction, CommandOptionType, Context, CreateAllowedMentions, CreateCommand,
-    CreateCommandOption, CreateInteractionResponse, CreateInteractionResponseMessage,
-    CreateMessage, EventHandler, GatewayIntents, Interaction, Message, MessageType, Permissions,
-    Ready,
+    Client, CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType,
+    Context, CreateAllowedMentions, CreateCommand, CreateCommandOption, CreateInteractionResponse,
+    CreateInteractionResponseMessage, CreateMessage, EventHandler, GatewayIntents, Interaction,
+    Message, MessageType, Permissions, Ready,
 };
 use serenity::async_trait;
 
-use twlinter::core::{CoreEngine, CoreOptions};
-use twlinter::discord_channels::ChannelRegistry;
+use twlinter::core::{CoreAnalysis, CoreEngine, CoreOptions};
+use twlinter::discord_config::{
+    invite_url, set_feature, spelling_rule, ChannelConfig, DiscordConfig, DiscordLinter,
+    ServerConfig,
+};
 use twlinter::discord_policy::{automatic_reply, rewrite_is_safe, rewrite_reply, rewrite_request};
+use twlinter::engine::disambig::DisambigStats;
 use twlinter::gemini::GeminiClient;
 use twlinter::llm::{validate_context_response, ContextRequest};
+use twlinter::rules::ruleset::CaseRule;
 
 const COMMAND_NAME: &str = "twlinter";
 
 struct Handler {
     engine: Arc<CoreEngine>,
     gemini: Option<GeminiClient>,
-    channels: Arc<ChannelRegistry>,
+    config: Arc<DiscordConfig>,
+    linter: Arc<DiscordLinter>,
 }
 
 #[async_trait]
@@ -31,12 +37,30 @@ impl EventHandler for Handler {
         if message.author.bot
             || message.content.trim().is_empty()
             || message.kind != MessageType::Regular
-            || !self.channels.is_enabled(message.channel_id.get())
         {
             return;
         }
 
-        let analysis = self.engine.analyze(&message.content);
+        let Some(guild_id) = message.guild_id else {
+            return;
+        };
+        let server = self.config.server(guild_id.get());
+        let channel = self
+            .config
+            .channel(guild_id.get(), message.channel_id.get());
+        let Some(lint) = self.linter.lint(&message.content, &server, channel) else {
+            return;
+        };
+        if lint.output.issues.is_empty() && !lint.input_was_simplified {
+            return;
+        }
+
+        let analysis = CoreAnalysis {
+            normalized_text: lint.normalized_text,
+            input_was_simplified: lint.input_was_simplified,
+            issues: lint.output.issues,
+            disambiguation: DisambigStats::default(),
+        };
         let context_request = ContextRequest::from_analysis(&message.content, &analysis);
         let decisions = if let Some(gemini) = &self.gemini {
             if context_request.issues.is_empty() {
@@ -76,7 +100,7 @@ impl EventHandler for Handler {
         };
 
         let reply = if result.changed {
-            self.contextual_reply(&message.content, &analysis, &result)
+            self.contextual_reply(&message.content, &analysis, &result, &server, channel)
                 .await
         } else {
             None
@@ -106,7 +130,11 @@ impl EventHandler for Handler {
         for guild in &ready.guilds {
             self.register_configuration_command(&ctx, guild.id).await;
         }
-        tracing::info!(user = %ready.user.name, "Discord bot connected");
+        tracing::info!(
+            user = %ready.user.name,
+            invite = %invite_url(ready.user.id.get()),
+            "Discord bot connected"
+        );
     }
 
     async fn guild_create(&self, ctx: Context, guild: serenity::all::Guild, _is_new: Option<bool>) {
@@ -133,6 +161,8 @@ impl Handler {
         source: &str,
         analysis: &twlinter::core::CoreAnalysis,
         result: &twlinter::core::CoreResult,
+        server: &ServerConfig,
+        channel: ChannelConfig,
     ) -> Option<String> {
         let Some(gemini) = &self.gemini else {
             return automatic_reply(result);
@@ -146,10 +176,9 @@ impl Handler {
                 if !response.rewritten_text.trim().is_empty()
                     && rewrite_is_safe(&request, &response.rewritten_text)
                     && self
-                        .engine
-                        .analyze(&response.rewritten_text)
-                        .issues
-                        .is_empty() =>
+                        .linter
+                        .lint(&response.rewritten_text, server, channel)
+                        .is_some_and(|lint| lint.output.issues.is_empty()) =>
             {
                 Some(rewrite_reply(&response.rewritten_text))
             }
@@ -187,44 +216,141 @@ impl Handler {
             return;
         }
 
+        let Some(guild_id) = command.guild_id else {
+            respond_ephemeral(ctx, &command, "這個指令只能在伺服器中使用。").await;
+            return;
+        };
         let operation = command
             .data
             .options
             .first()
             .map(|option| option.name.as_str());
         let response = match operation {
-            Some("enable") => match self.channels.enable(command.channel_id.get()) {
-                Ok(true) => "已啟用目前頻道的 TWLinter 自動情境改寫。".to_string(),
-                Ok(false) => "目前頻道已經是啟用狀態。".to_string(),
+            Some("enable") => match self.config.update_channel(
+                guild_id.get(),
+                command.channel_id.get(),
+                ChannelConfig { tracking: true },
+            ) {
+                Ok(()) => "已啟用目前頻道的 TWLinter tracking。".to_string(),
                 Err(error) => format!("啟用失敗，設定尚未保存：{error}"),
             },
-            Some("disable") => match self.channels.disable(command.channel_id.get()) {
-                Ok(true) => "已停用目前頻道的 TWLinter。".to_string(),
-                Ok(false) => "目前頻道原本就沒有啟用。".to_string(),
+            Some("disable") => match self.config.update_channel(
+                guild_id.get(),
+                command.channel_id.get(),
+                ChannelConfig { tracking: false },
+            ) {
+                Ok(()) => "已停用目前頻道的 TWLinter tracking。".to_string(),
                 Err(error) => format!("停用失敗，設定尚未保存：{error}"),
             },
             Some("status") => {
-                let channels = self.channels.list();
+                let server = self.config.server(guild_id.get());
+                let channels = self.config.tracked_channels(guild_id.get());
+                let features = server.features;
+                let feature_status = format!(
+                    "terminology={}, spacing={}, case_dictionary={}, custom_rules={}",
+                    features.terminology,
+                    features.spacing,
+                    features.case_dictionary,
+                    features.custom_rules
+                );
                 if channels.is_empty() {
-                    "目前沒有啟用任何頻道。請在要觸發的頻道使用 `/twlinter enable`。".to_string()
+                    format!("Server 功能：{feature_status}；目前沒有 tracking 頻道。")
                 } else {
                     let list = channels
                         .iter()
                         .map(|channel_id| format!("<#{channel_id}>"))
                         .collect::<Vec<_>>()
                         .join("、");
-                    format!("目前啟用的頻道：{list}")
+                    format!("Server 功能：{feature_status}；目前 tracking 頻道：{list}")
                 }
             }
-            _ => "請選擇 enable、disable 或 status。".to_string(),
+            Some("feature") => {
+                let name = required_string(&command, "feature");
+                let enabled = required_bool(&command, "enabled");
+                match (name, enabled) {
+                    (Ok(name), Ok(enabled)) => {
+                        let mut server = self.config.server(guild_id.get());
+                        match set_feature(&mut server.features, name, enabled)
+                            .and_then(|()| self.config.update_server(guild_id.get(), server))
+                        {
+                            Ok(()) => format!("已將 server 功能 `{name}` 設為 `{enabled}`。"),
+                            Err(error) => format!("設定失敗，設定尚未保存：{error}"),
+                        }
+                    }
+                    (Err(error), _) | (_, Err(error)) => error,
+                }
+            }
+            Some("rule") => {
+                let from = required_string(&command, "from");
+                let to = required_string(&command, "to");
+                match (from, to) {
+                    (Ok(from), Ok(to)) => {
+                        let mut server = self.config.server(guild_id.get());
+                        server.custom_spelling_rules.push(spelling_rule(from, to));
+                        match self.config.update_server(guild_id.get(), server) {
+                            Ok(()) => format!("已新增 server 用語規則：`{from}` → `{to}`。"),
+                            Err(error) => format!("設定失敗，設定尚未保存：{error}"),
+                        }
+                    }
+                    (Err(error), _) | (_, Err(error)) => error,
+                }
+            }
+            Some("case") => match required_string(&command, "term") {
+                Ok(term) => {
+                    let mut server = self.config.server(guild_id.get());
+                    server.custom_case_rules.push(serenity_case_rule(term));
+                    match self.config.update_server(guild_id.get(), server) {
+                        Ok(()) => format!("已新增 server 專有名詞大小寫規則：`{term}`。"),
+                        Err(error) => format!("設定失敗，設定尚未保存：{error}"),
+                    }
+                }
+                Err(error) => error,
+            },
+            _ => "請選擇 enable、disable、status、feature、rule 或 case。".to_string(),
         };
         respond_ephemeral(ctx, &command, response).await;
     }
 }
 
 fn configuration_command() -> CreateCommand {
+    let feature = CreateCommandOption::new(
+        CommandOptionType::SubCommand,
+        "feature",
+        "設定 server-level linter 功能",
+    )
+    .add_sub_option(
+        CreateCommandOption::new(CommandOptionType::String, "feature", "功能名稱")
+            .required(true)
+            .add_string_choice("terminology", "terminology")
+            .add_string_choice("spacing", "spacing")
+            .add_string_choice("case_dictionary", "case_dictionary")
+            .add_string_choice("custom_rules", "custom_rules"),
+    )
+    .add_sub_option(
+        CreateCommandOption::new(CommandOptionType::Boolean, "enabled", "是否開啟").required(true),
+    );
+    let rule = CreateCommandOption::new(
+        CommandOptionType::SubCommand,
+        "rule",
+        "新增 server-level 用語規則",
+    )
+    .add_sub_option(
+        CreateCommandOption::new(CommandOptionType::String, "from", "要被替換的詞").required(true),
+    )
+    .add_sub_option(
+        CreateCommandOption::new(CommandOptionType::String, "to", "建議詞").required(true),
+    );
+    let case = CreateCommandOption::new(
+        CommandOptionType::SubCommand,
+        "case",
+        "新增 server-level 專有名詞大小寫規則",
+    )
+    .add_sub_option(
+        CreateCommandOption::new(CommandOptionType::String, "term", "正確大小寫").required(true),
+    );
+
     CreateCommand::new(COMMAND_NAME)
-        .description("設定 TWLinter 自動改寫頻道")
+        .description("設定 TWLinter server 功能與 tracking 頻道")
         .default_member_permissions(Permissions::MANAGE_GUILD)
         .dm_permission(false)
         .add_option(CreateCommandOption::new(
@@ -242,6 +368,40 @@ fn configuration_command() -> CreateCommand {
             "status",
             "查看已啟用的頻道",
         ))
+        .add_option(feature)
+        .add_option(rule)
+        .add_option(case)
+}
+
+fn required_string<'a>(command: &'a CommandInteraction, name: &str) -> Result<&'a str, String> {
+    subcommand_option(command, name)
+        .and_then(|option| option.value.as_str())
+        .ok_or_else(|| format!("缺少參數 `{name}`。"))
+}
+
+fn required_bool(command: &CommandInteraction, name: &str) -> Result<bool, String> {
+    subcommand_option(command, name)
+        .and_then(|option| option.value.as_bool())
+        .ok_or_else(|| format!("缺少參數 `{name}`。"))
+}
+
+fn subcommand_option<'a>(
+    command: &'a CommandInteraction,
+    name: &str,
+) -> Option<&'a CommandDataOption> {
+    let subcommand = command.data.options.first()?;
+    let CommandDataOptionValue::SubCommand(options) = &subcommand.value else {
+        return None;
+    };
+    options.iter().find(|option| option.name == name)
+}
+
+fn serenity_case_rule(term: &str) -> CaseRule {
+    CaseRule {
+        term: term.to_owned(),
+        alternatives: None,
+        disabled: false,
+    }
 }
 
 async fn respond_ephemeral(
@@ -263,7 +423,8 @@ async fn respond_ephemeral(
 async fn main() -> Result<()> {
     twlinter::trace::init("info");
     let discord_token = std::env::var("DISCORD_TOKEN").context("DISCORD_TOKEN is required")?;
-    let channels = Arc::new(ChannelRegistry::from_env()?);
+    let config = Arc::new(DiscordConfig::from_env()?);
+    let linter = Arc::new(DiscordLinter::new()?);
     let gemini = std::env::var("GEMINI_API_KEY").ok().map(|key| {
         GeminiClient::new(
             key,
@@ -276,7 +437,8 @@ async fn main() -> Result<()> {
     let handler = Handler {
         engine,
         gemini,
-        channels,
+        config,
+        linter,
     };
     let mut client = Client::builder(&discord_token, intents)
         .event_handler(handler)

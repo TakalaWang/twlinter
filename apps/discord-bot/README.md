@@ -19,15 +19,22 @@ cargo run --release --features discord --bin twlinter-discord
 ```
 
 `GEMINI_API_KEY` may be omitted. Without it, deterministic corrections still
-work and unresolved context remains unchanged. The channel file defaults to
-`twlinter-channels.json` and can be overridden with `TWLINTER_CHANNELS_FILE`.
+work and unresolved context remains unchanged. The bot prints the complete
+invite URL after connecting. Settings default to the platform config directory
+and can be overridden with `TWLINTER_CONFIG_FILE`.
 
 After the bot connects, a server administrator uses these commands in the
 channel where the bot should operate:
 
 - `/twlinter enable` — register the current channel.
 - `/twlinter disable` — stop replies in the current channel.
-- `/twlinter status` — list registered channels.
+- `/twlinter feature` — enable or disable a linter for the whole server:
+  `terminology`, `spacing`, `case_dictionary`, or `custom_rules`.
+- `/twlinter rule` — add a server-level terminology rule.
+- `/twlinter case` — add a server-level proper-noun casing rule.
+- `/twlinter status` — show server features and registered channels.
 
-Users then write ordinary messages. No rewrite command is needed; TWLinter
-replies only when the registered channel's message needs a zh-TW correction.
+Simplified-to-Traditional conversion is included in `terminology`. Channels
+only control tracking; every tracked channel in a server uses that server's
+same feature set. Users then write ordinary messages. No rewrite command is
+needed; TWLinter replies only when a tracked message needs a zh-TW correction.
