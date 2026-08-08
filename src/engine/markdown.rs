@@ -88,6 +88,7 @@ pub fn build_markdown_excluded_ranges_with_options(
     let mut code_block_start = 0usize;
     let mut blockquote_depth: usize = 0;
     let mut blockquote_start: usize = 0;
+    let mut strikethrough_start: Option<usize> = None;
 
     for (event, range) in parser.into_offset_iter() {
         match event {
@@ -116,6 +117,20 @@ pub fn build_markdown_excluded_ranges_with_options(
                 if blockquote_depth == 0 {
                     ranges.push(ByteRange {
                         start: blockquote_start,
+                        end: range.end,
+                    });
+                }
+            }
+
+            // Discord renders `~~...~~` as strikethrough. Exclude the whole
+            // span so an inner tilde is not mistaken for a CJK range marker.
+            Event::Start(Tag::Strikethrough) => {
+                strikethrough_start = Some(range.start);
+            }
+            Event::End(TagEnd::Strikethrough) => {
+                if let Some(start) = strikethrough_start.take() {
+                    ranges.push(ByteRange {
+                        start,
                         end: range.end,
                     });
                 }
@@ -548,6 +563,15 @@ mod tests {
     fn empty_input() {
         let ranges = build_markdown_excluded_ranges("");
         assert!(ranges.is_empty());
+    }
+
+    #[test]
+    fn discord_strikethrough_excludes_inner_tilde() {
+        let md = "~~第一~第二~~ 軟件";
+        let ranges = build_markdown_excluded_ranges(md);
+        assert!(ranges
+            .iter()
+            .any(|range| &md[range.start..range.end] == "~~第一~第二~~"));
     }
 
     #[test]

@@ -17,8 +17,8 @@ distclean: clean
 	rm -rf $(OPENCC_DICT_DIR)
 
 check: $(S2T_DATA)
-	cargo test
-	cargo clippy -- -D warnings
+	cargo test --all-targets --features discord
+	cargo clippy --all-targets --features discord -- -D warnings
 	cargo fmt --check
 	python3 scripts/check-ruleset.py --lint
 

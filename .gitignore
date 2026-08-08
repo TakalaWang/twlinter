@@ -3,6 +3,8 @@
 externals/
 rules.sled/
 *.sled/
+twlinter-discord.json
+twlinter-discord.tmp
 .qwen/
 .gemini/
 .serena/
