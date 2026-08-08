@@ -5,14 +5,24 @@ use regex::Regex;
 use crate::core::CoreResult;
 use crate::llm::ProtectedSpan;
 
-pub const REWRITE_COMMAND: &str = "/tw-rewrite ";
+const DISCORD_BODY_LIMIT: usize = 1_900;
+const OVERSIZE_REPLY: &str = "改寫內容超過 Discord 長度限制，未自動回覆。";
 
 pub fn automatic_reply(result: &CoreResult) -> Option<String> {
     if !result.changed || result.text.is_empty() {
         return None;
     }
-    let text = truncate_for_discord(&result.text);
-    Some(format!("建議改成：\n{text}"))
+    if result.text.chars().count() > DISCORD_BODY_LIMIT {
+        return Some(OVERSIZE_REPLY.to_string());
+    }
+    Some(format!("建議改成：\n{}", result.text))
+}
+
+pub fn rewrite_reply(text: &str) -> String {
+    if text.chars().count() > DISCORD_BODY_LIMIT {
+        return OVERSIZE_REPLY.to_string();
+    }
+    format!("建議改成：\n{text}")
 }
 
 pub fn rewrite_request(
@@ -69,13 +79,4 @@ pub fn rewrite_is_safe(request: &crate::llm::RewriteRequest, rewritten: &str) ->
         .protected_spans
         .iter()
         .all(|span| rewritten.contains(&span.text))
-}
-
-fn truncate_for_discord(text: &str) -> String {
-    const LIMIT: usize = 1900;
-    if text.chars().count() <= LIMIT {
-        return text.to_string();
-    }
-    let truncated: String = text.chars().take(LIMIT - 1).collect();
-    format!("{truncated}…")
 }

@@ -10,7 +10,7 @@ Taiwan-localized wording.
 TWLinter detects Mainland Chinese terminology, punctuation, character variants,
 translationese, and context-sensitive terms. It can report issues, apply safe
 deterministic fixes, expose a reusable Rust core, and optionally use Gemini for
-bounded contextual decisions or explicit rewrites.
+bounded contextual decisions and automatic rewrites.
 
 ## Upstream project and provenance
 
@@ -24,7 +24,8 @@ This repository changes the integration boundary:
 - removes MCP transport and MCP-only runtime code;
 - exposes the ruleset and tier logic through `twlinter::core::CoreEngine`;
 - keeps Gemini optional and restricts its choices to ruleset-provided candidates;
-- adds a native Discord adapter for automatic corrections and `/tw-rewrite`.
+- adds a native Discord adapter with administrator-controlled channel scope and
+  automatic context-aware corrections.
 
 Please see the upstream repository for the original project history and rule
 provenance. Changes to copied rules should be made with that source relationship
@@ -41,7 +42,7 @@ in mind.
 - Profiles for base and strict checking
 - Safe lexical fixes with post-fix validation
 - Chrome extension for visible page text
-- Optional Gemini contextual decisions and explicit prose rewriting
+- Optional Gemini contextual decisions and automatic prose rewriting
 - Discord bot with protected URL, mention, and code spans
 
 ## Architecture
@@ -66,8 +67,9 @@ CLI / Chrome Extension / Discord Bot
 
 The core is transport-independent. External model output is accepted only when
 it refers to an exact issue and selects one of that issue's existing ruleset
-candidates. Full LLM rewriting is available only through the explicit
-`/tw-rewrite` command in the Discord adapter.
+candidates. In registered Discord channels, full LLM rewriting runs
+automatically when a message needs correction; `/twlinter` is reserved for
+channel administration.
 
 ## Quick start
 
@@ -111,24 +113,25 @@ need the CLI or Discord adapter.
 
 ## Discord bot
 
-The bot listens to Discord Gateway messages and requires the privileged
-`MESSAGE_CONTENT` intent. Enable it in the Discord Developer Portal before
-starting the bot.
+The bot listens to Discord Gateway messages in administrator-registered
+channels and requires the privileged `MESSAGE_CONTENT` intent. Enable it in
+the Discord Developer Portal before starting the bot.
 
 ```bash
 export DISCORD_TOKEN="..."
 export GEMINI_API_KEY="..."       # optional
 export GEMINI_MODEL="gemini-2.5-flash"
+export TWLINTER_CHANNELS_FILE="twlinter-channels.json"
 
 cargo run --release --features discord --bin twlinter-discord
 ```
 
 Without `GEMINI_API_KEY`, deterministic and locally resolved corrections still
-work; unresolved ambiguous terms remain unchanged. Full rewriting requires:
-
-```text
-/tw-rewrite 原始訊息
-```
+work; unresolved ambiguous terms remain unchanged. With Gemini configured,
+messages that need correction are rewritten automatically after the channel is
+enabled with `/twlinter enable`. `/twlinter disable` stops the current channel,
+and `/twlinter status` lists the registered channels. These are administration
+commands only; users do not need a rewrite command.
 
 See [apps/discord-bot/README.md](apps/discord-bot/README.md) for deployment
 notes and [apps/discord-bot/config.example.env](apps/discord-bot/config.example.env)

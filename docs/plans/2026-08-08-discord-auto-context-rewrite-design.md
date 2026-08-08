@@ -19,11 +19,11 @@ Discord 指令只負責管理觸發範圍：啟用目前頻道、停用目前頻
 
 ## 元件與資料流
 
-1. `message` event 先忽略 Bot、自訂頻道未啟用或空訊息。
+1. `message` event 先忽略 Bot、system、空訊息或未啟用頻道。
 2. `CoreEngine::analyze` 產生規則問題，`CoreEngine::apply` 先產生確定性草稿與候選決策。
 3. 有 Gemini 且草稿有變更時，送出原文、草稿、問題與 protected spans。
 4. 回應通過 protected-span 檢查，重新分析後沒有殘留問題，才回覆改寫結果；否則回覆確定性草稿。
-5. `interaction_create` 只處理管理指令，並要求 `MANAGE_GUILD`；每次啟動在已加入的 Guild 建立同一個本地 slash command。
+5. `interaction_create` 只處理管理指令，並要求 `MANAGE_GUILD`；啟動與加入新 Guild 時，以可重複執行的方式設定同一個本地 slash command。
 
 頻道資料只保存 Discord channel ID，不保存訊息內容或 Token。寫入失敗時指令回覆錯誤，記憶體中的清單不宣稱已持久化成功。
 

@@ -64,11 +64,11 @@ Expected: all registry tests pass.
 
 **Step 1: Remove the user rewrite trigger**
 
-Delete `REWRITE_COMMAND` and stop branching on message prefixes. Every non-empty message in an enabled channel follows the same pipeline.
+Delete `REWRITE_COMMAND` and stop branching on message prefixes. Every eligible normal message in an enabled channel follows the same pipeline.
 
 **Step 2: Gate ordinary messages by the registry**
 
-Ignore ordinary messages until their `channel_id` is registered. Keep Bot-message suppression before registry and engine work.
+Ignore bot, system, empty, and unregistered-channel messages before registry and engine work.
 
 **Step 3: Call Gemini automatically for changed drafts**
 
@@ -90,7 +90,7 @@ Expected: policy tests pass and the Discord binary compiles.
 
 **Step 1: Register a local guild command**
 
-Create `/twlinter` with `enable`, `disable`, and `status` subcommands on each guild at `ready`. Set default member permission to `MANAGE_GUILD` and keep the handler permission check.
+Create `/twlinter` with `enable`, `disable`, and `status` subcommands on each guild at `ready` and when a guild is added. Use idempotent guild command replacement, set default member permission to `MANAGE_GUILD`, and keep the handler permission check.
 
 **Step 2: Handle interactions**
 
