@@ -12,7 +12,7 @@ fn binary_path() -> std::path::PathBuf {
     if path.ends_with("deps") {
         path.pop();
     }
-    path.push("zhtw-core");
+    path.push("twlinter");
     path
 }
 
@@ -386,7 +386,7 @@ fn cli_lint_config_file_applied() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(dir.path().join("test.md"), "軟件").unwrap();
     // Config sets max_warnings=0, so even one warning should fail.
-    std::fs::write(dir.path().join(".zhtw-core.toml"), "max_warnings = 0\n").unwrap();
+    std::fs::write(dir.path().join(".twlinter.toml"), "max_warnings = 0\n").unwrap();
 
     let bin = binary_path();
     let output = Command::new(&bin)
@@ -407,7 +407,7 @@ fn cli_lint_config_cli_overrides_config() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(dir.path().join("test.md"), "軟件").unwrap();
     // Config sets max_warnings=0, but CLI overrides with max_warnings=100.
-    std::fs::write(dir.path().join(".zhtw-core.toml"), "max_warnings = 0\n").unwrap();
+    std::fs::write(dir.path().join(".twlinter.toml"), "max_warnings = 0\n").unwrap();
 
     let bin = binary_path();
     let output = Command::new(&bin)
@@ -499,7 +499,7 @@ fn cli_lint_sarif_output() {
         results[0]["ruleId"]
             .as_str()
             .unwrap()
-            .starts_with("zhtw-core/"),
+            .starts_with("twlinter/"),
         "ruleId should be namespaced"
     );
     assert!(
@@ -664,7 +664,7 @@ fn cli_lint_compact_format_includes_path_single_file() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("test.txt");
     std::fs::write(&path, "這個軟件").unwrap();
-    let output = Command::new(env!("CARGO_BIN_EXE_zhtw-core"))
+    let output = Command::new(env!("CARGO_BIN_EXE_twlinter"))
         .args(["lint", "test.txt", "--format", "compact"])
         .current_dir(dir.path())
         .output()
@@ -740,10 +740,10 @@ fn cli_lint_grammar_sarif_format() {
     let results = parsed["runs"][0]["results"].as_array().unwrap();
     let grammar = results
         .iter()
-        .find(|r| r["ruleId"].as_str().unwrap() == "zhtw-core/grammar");
+        .find(|r| r["ruleId"].as_str().unwrap() == "twlinter/grammar");
     assert!(
         grammar.is_some(),
-        "SARIF should have zhtw-core/grammar ruleId: {stdout}"
+        "SARIF should have twlinter/grammar ruleId: {stdout}"
     );
     let g = grammar.unwrap();
     assert!(

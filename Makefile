@@ -23,7 +23,7 @@ check: $(S2T_DATA)
 	python3 scripts/check-ruleset.py --lint
 
 check-size: all
-	@SIZE=$$(wc -c < target/release/zhtw-core | tr -d ' '); \
+	@SIZE=$$(wc -c < target/release/twlinter | tr -d ' '); \
 	MAX=20971520; \
 	if [ "$$SIZE" -gt "$$MAX" ]; then \
 		echo "FAIL: release binary $$SIZE bytes exceeds 20 MiB budget ($$MAX)"; \

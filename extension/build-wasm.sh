@@ -16,7 +16,7 @@ fi
 wasm-pack build . \
   --target web \
   --out-dir extension/dist \
-  --out-name zhtw_core_wasm \
+  --out-name twlinter_wasm \
   --no-opt \
   --no-default-features \
   --features browser-wasm

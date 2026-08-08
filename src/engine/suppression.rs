@@ -1,4 +1,4 @@
-// Inline suppression mechanism for zhtw-core linting.
+// Inline suppression mechanism for twlinter linting.
 //
 // Users can suppress linting for specific lines or blocks using comments:
 //   Markdown: <!-- zhtw:ignore-next-line --> or <!-- zhtw:disable-next-line -->

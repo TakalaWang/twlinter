@@ -6,12 +6,12 @@ use anyhow::{Context as _, Result};
 use serenity::all::{Client, Context, EventHandler, GatewayIntents, Message, Ready};
 use serenity::async_trait;
 
-use zhtw_core::core::{CoreEngine, CoreOptions};
-use zhtw_core::discord_policy::{
+use twlinter::core::{CoreEngine, CoreOptions};
+use twlinter::discord_policy::{
     automatic_reply, rewrite_is_safe, rewrite_request, REWRITE_COMMAND,
 };
-use zhtw_core::gemini::GeminiClient;
-use zhtw_core::llm::{validate_context_response, ContextRequest};
+use twlinter::gemini::GeminiClient;
+use twlinter::llm::{validate_context_response, ContextRequest};
 
 struct Handler {
     engine: Arc<CoreEngine>,
@@ -112,7 +112,7 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    zhtw_core::trace::init("info");
+    twlinter::trace::init("info");
     let discord_token = std::env::var("DISCORD_TOKEN").context("DISCORD_TOKEN is required")?;
     let gemini = std::env::var("GEMINI_API_KEY").ok().map(|key| {
         GeminiClient::new(

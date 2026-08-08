@@ -1,7 +1,7 @@
 # Discord bot
 
 This adapter listens to Discord messages and delegates terminology detection,
-Tier 1/Tier 2 rules, and post-fix validation to `zhtw_core::core::CoreEngine`.
+Tier 1/Tier 2 rules, and post-fix validation to `twlinter::core::CoreEngine`.
 Gemini is optional: it only selects from ruleset-provided candidates during
 automatic replies and performs a full rewrite for the explicit `/tw-rewrite`
 command.
@@ -14,7 +14,7 @@ command.
 3. Start the bot from the repository root:
 
 ```bash
-cargo run --release --features discord --bin zhtw-discord-bot
+cargo run --release --features discord --bin twlinter-discord
 ```
 
 `GEMINI_API_KEY` may be omitted. Without it, deterministic and locally

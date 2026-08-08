@@ -1,4 +1,4 @@
-# zhtw-core
+# twlinter
 
 A Traditional Chinese (zh-TW) linter and conversion core for correcting
 Mainland Chinese terminology, punctuation, character variants, and common
@@ -7,7 +7,7 @@ translationese before text reaches users.
 The ruleset is copied from the upstream zhtw-mcp project and remains the source
 of truth. This repository removes MCP as a runtime dependency and exposes the
 same scanner, rules, Tier 1/Tier 2 disambiguation, fixer, and validator through
-the reusable zhtw_core::core::CoreEngine API.
+the reusable twlinter::core::CoreEngine API.
 
 ## What it checks
 
@@ -34,15 +34,15 @@ make
 make check
 ~~~
 
-The standalone binary is target/release/zhtw-core.
+The standalone binary is target/release/twlinter.
 
 ## CLI
 
 ~~~
-zhtw-core lint README.md
-zhtw-core lint file.md --fix
-zhtw-core lint file.md --fix --dry-run
-zhtw-core convert file.md
+twlinter lint README.md
+twlinter lint file.md --fix
+twlinter lint file.md --fix --dry-run
+twlinter convert file.md
 ~~~
 
 ## Discord bot
@@ -55,7 +55,7 @@ intent in the Discord Developer Portal before starting the bot.
 export DISCORD_TOKEN="..."
 export GEMINI_API_KEY="..."
 export GEMINI_MODEL="gemini-2.5-flash"
-cargo run --features discord --bin zhtw-discord-bot
+cargo run --features discord --bin twlinter-discord
 ~~~
 
 Without GEMINI_API_KEY, deterministic and locally resolved corrections still
@@ -74,7 +74,7 @@ scanned again before the bot replies.
 
 ~~~
 Discord Bot ──┐
-              ├── zhtw_core::core::CoreEngine
+              ├── twlinter::core::CoreEngine
 CLI ──────────┘             │
                             ├── ruleset
                             ├── Tier 1 deterministic scan
@@ -96,4 +96,4 @@ transport protocol.
 
 ## License
 
-zhtw-core is available under the MIT license. See LICENSE.
+twlinter is available under the MIT license. See LICENSE.

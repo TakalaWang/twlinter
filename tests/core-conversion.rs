@@ -1,4 +1,4 @@
-use zhtw_core::core::{CoreEngine, CoreOptions, IssueDecision};
+use twlinter::core::{CoreEngine, CoreOptions, IssueDecision};
 
 #[test]
 fn core_reuses_upstream_rules_and_applies_deterministic_fixes() {

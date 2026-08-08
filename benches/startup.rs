@@ -1,4 +1,4 @@
-// Startup / cold-first-request profiler for zhtw-core.
+// Startup / cold-first-request profiler for twlinter.
 //
 // Not a criterion benchmark: cold-start is a once-per-process event. Criterion
 // runs many iterations, so its lazy statics (grammar AC, zhtype char tables,
@@ -18,9 +18,9 @@
 
 use std::time::Instant;
 
-use zhtw_core::engine::scan::Scanner;
-use zhtw_core::rules::loader::load_embedded_ruleset;
-use zhtw_core::rules::ruleset::Profile;
+use twlinter::engine::scan::Scanner;
+use twlinter::rules::loader::load_embedded_ruleset;
+use twlinter::rules::ruleset::Profile;
 
 // Representative first-request text: mixed CJK prose with flaggable Mainland
 // terms plus ASCII, sized like a typical paragraph a client sends first.

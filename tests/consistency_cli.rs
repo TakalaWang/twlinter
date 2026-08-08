@@ -9,7 +9,7 @@ fn binary_path() -> std::path::PathBuf {
     if path.ends_with("deps") {
         path.pop();
     }
-    path.push("zhtw-core");
+    path.push("twlinter");
     path
 }
 

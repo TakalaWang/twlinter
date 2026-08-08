@@ -1,5 +1,5 @@
-use zhtw_core::core::{CoreEngine, CoreOptions};
-use zhtw_core::llm::{validate_context_response, ContextDecision, ContextRequest, ContextResponse};
+use twlinter::core::{CoreEngine, CoreOptions};
+use twlinter::llm::{validate_context_response, ContextDecision, ContextRequest, ContextResponse};
 
 #[test]
 fn context_response_is_limited_to_ruleset_candidates() {

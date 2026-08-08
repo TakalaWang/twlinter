@@ -11,9 +11,9 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use zhtw_core::engine::scan::{ContentType, Scanner};
-use zhtw_core::rules::loader::load_embedded_ruleset;
-use zhtw_core::rules::ruleset::{Issue, IssueType, Profile};
+use twlinter::engine::scan::{ContentType, Scanner};
+use twlinter::rules::loader::load_embedded_ruleset;
+use twlinter::rules::ruleset::{Issue, IssueType, Profile};
 
 const FIXTURE_PREFIX: &str = "calque_";
 

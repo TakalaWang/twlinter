@@ -56,8 +56,8 @@ pub struct PackMetadata {
 /// Persistent overrides/pack file: a JSON object with schema version,
 /// optional metadata, spelling overrides, and case overrides.
 ///
-/// Used for both ~/.config/zhtw-core/overrides.json and pack files
-/// in ~/.config/zhtw-core/packs/. The metadata is optional for
+/// Used for both ~/.config/twlinter/overrides.json and pack files
+/// in ~/.config/twlinter/packs/. The metadata is optional for
 /// backward compatibility with plain override files.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Overrides {
@@ -307,12 +307,12 @@ fn backup_and_reset(path: &Path, ext: &str) -> Overrides {
 /// Resolve the default overrides file path.
 ///
 /// Priority:
-///   1. $XDG_CONFIG_HOME/zhtw-core/overrides.json (if absolute)
-///   2. Platform-native config dir/zhtw-core/overrides.json
+///   1. $XDG_CONFIG_HOME/twlinter/overrides.json (if absolute)
+///   2. Platform-native config dir/twlinter/overrides.json
 ///   3. ./overrides.json (fallback)
 pub fn default_overrides_path() -> PathBuf {
     config_dir()
-        .map(|d| d.join("zhtw-core").join("overrides.json"))
+        .map(|d| d.join("twlinter").join("overrides.json"))
         .unwrap_or_else(|| PathBuf::from("overrides.json"))
 }
 
@@ -474,7 +474,7 @@ impl SuppressionStore {
 /// Resolve the default suppressions file path.
 pub fn default_suppressions_path() -> PathBuf {
     config_dir()
-        .map(|d| d.join("zhtw-core").join("suppressions.json"))
+        .map(|d| d.join("twlinter").join("suppressions.json"))
         .unwrap_or_else(|| PathBuf::from("suppressions.json"))
 }
 
@@ -767,7 +767,7 @@ pub fn iso_date_today() -> String {
 /// Resolve the default packs directory.
 pub fn default_packs_dir() -> PathBuf {
     config_dir()
-        .map(|d| d.join("zhtw-core").join("packs"))
+        .map(|d| d.join("twlinter").join("packs"))
         .unwrap_or_else(|| PathBuf::from("packs"))
 }
 

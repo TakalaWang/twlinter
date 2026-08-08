@@ -8,10 +8,10 @@
 use std::fmt::Write;
 use std::time::Instant;
 
-use zhtw_core::engine::excluded::ByteRange;
-use zhtw_core::engine::scan::{build_exclusions_for_content_type, ContentType, Scanner};
-use zhtw_core::fixer::{apply_fixes_with_context, remap_exclusions, FixMode};
-use zhtw_core::rules::ruleset::{Profile, RuleType, SpellingRule};
+use twlinter::engine::excluded::ByteRange;
+use twlinter::engine::scan::{build_exclusions_for_content_type, ContentType, Scanner};
+use twlinter::fixer::{apply_fixes_with_context, remap_exclusions, FixMode};
+use twlinter::rules::ruleset::{Profile, RuleType, SpellingRule};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -303,7 +303,7 @@ fn remap_exclusions_identity_when_no_fixes() {
 /// Verify that remap shifts exclusions correctly for a simple single fix.
 #[test]
 fn remap_exclusions_shifts_after_shorter_replacement() {
-    use zhtw_core::fixer::AppliedFix;
+    use twlinter::fixer::AppliedFix;
 
     // Original text: "AAAA軟件BBBB" where 軟件 is at offset 4, length 6 bytes.
     // Fix: 軟件 (6 bytes) -> 軟體 (6 bytes) -- same length, no shift.
@@ -328,7 +328,7 @@ fn remap_exclusions_shifts_after_shorter_replacement() {
 /// Verify that remap shifts exclusions correctly for a longer replacement.
 #[test]
 fn remap_exclusions_shifts_after_longer_replacement() {
-    use zhtw_core::fixer::AppliedFix;
+    use twlinter::fixer::AppliedFix;
 
     let exclusions = vec![ByteRange { start: 20, end: 30 }];
 

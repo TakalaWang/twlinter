@@ -2146,6 +2146,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "twlinter"
+version = "0.1.0"
+dependencies = [
+ "aho-corasick",
+ "anyhow",
+ "blake3",
+ "console_error_panic_hook",
+ "criterion",
+ "daachorse",
+ "dirs",
+ "fs2",
+ "postcard",
+ "pulldown-cmark",
+ "rayon",
+ "regex",
+ "rustc-hash",
+ "serde",
+ "serde_json",
+ "serenity",
+ "tempfile",
+ "tokio",
+ "toml",
+ "tracing",
+ "tracing-subscriber",
+ "unicode-normalization",
+ "ureq",
+ "urlencoding",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "typemap_rev"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2834,37 +2865,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.117",
-]
-
-[[package]]
-name = "zhtw-core"
-version = "0.1.0"
-dependencies = [
- "aho-corasick",
- "anyhow",
- "blake3",
- "console_error_panic_hook",
- "criterion",
- "daachorse",
- "dirs",
- "fs2",
- "postcard",
- "pulldown-cmark",
- "rayon",
- "regex",
- "rustc-hash",
- "serde",
- "serde_json",
- "serenity",
- "tempfile",
- "tokio",
- "toml",
- "tracing",
- "tracing-subscriber",
- "unicode-normalization",
- "ureq",
- "urlencoding",
- "wasm-bindgen",
 ]
 
 [[package]]

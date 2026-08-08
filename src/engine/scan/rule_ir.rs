@@ -782,7 +782,7 @@ pub fn compile_spelling_rules_filtered(
                     Ok(i) => i,
                     Err(_) => {
                         tracing::warn!(
-                            "[zhtw-core] clue index overflow (>{} unique clues); \
+                            "[twlinter] clue index overflow (>{} unique clues); \
                              remaining clues will be ignored",
                             u16::MAX
                         );
@@ -838,7 +838,7 @@ pub fn compile_spelling_rules_filtered(
             if let Some(ids) = slot {
                 if ids.len() > 32 {
                     tracing::warn!(
-                        "[zhtw-core] rule '{}' has {} {label} clues, \
+                        "[twlinter] rule '{}' has {} {label} clues, \
                          exceeds bitset capacity 32; truncating",
                         spelling_rules[i].from,
                         ids.len(),
@@ -869,7 +869,7 @@ pub fn compile_spelling_rules_filtered(
                         let clue = PositionalClue::parse(s);
                         if clue.is_none() {
                             tracing::warn!(
-                                "[zhtw-core] rule '{}': unrecognized positional clue '{}'",
+                                "[twlinter] rule '{}': unrecognized positional clue '{}'",
                                 rule.from,
                                 s
                             );

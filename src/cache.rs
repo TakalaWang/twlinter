@@ -322,11 +322,11 @@ fn atomic_write(parent: &Path, dest: &Path, bytes: &[u8]) -> bool {
         .is_ok_and(|mut tmp| tmp.write_all(bytes).is_ok() && tmp.persist(dest).is_ok())
 }
 
-/// Default cache file location: ~/.cache/zhtw-core/scan-cache.json
+/// Default cache file location: ~/.cache/twlinter/scan-cache.json
 fn default_cache_path() -> PathBuf {
     dirs::cache_dir()
         .unwrap_or_else(|| PathBuf::from("/tmp"))
-        .join("zhtw-core")
+        .join("twlinter")
         .join("scan-cache.json")
 }
 

@@ -8,10 +8,10 @@
 //   cargo test --test fix_tier_benchmark -- --nocapture
 
 use std::time::Instant;
-use zhtw_core::engine::scan::Scanner;
-use zhtw_core::engine::segment::Segmenter;
-use zhtw_core::fixer::{apply_fixes_with_context, FixMode};
-use zhtw_core::rules::ruleset::Ruleset;
+use twlinter::engine::scan::Scanner;
+use twlinter::engine::segment::Segmenter;
+use twlinter::fixer::{apply_fixes_with_context, FixMode};
+use twlinter::rules::ruleset::Ruleset;
 
 fn load_scanner() -> (Scanner, Segmenter) {
     let json_str = include_str!("../assets/ruleset.json");

@@ -1,7 +1,7 @@
 // 35.9 — project glossary integration test.
 //
 // Verifies that `[glossary] banned`, `proper_nouns`, and `preferred`
-// fields in `.zhtw-core.toml` are honored by the `lint` subcommand.
+// fields in `.twlinter.toml` are honored by the `lint` subcommand.
 
 use std::process::{Command, Stdio};
 
@@ -11,7 +11,7 @@ fn binary_path() -> std::path::PathBuf {
     if path.ends_with("deps") {
         path.pop();
     }
-    path.push("zhtw-core");
+    path.push("twlinter");
     path
 }
 
@@ -23,7 +23,7 @@ fn glossary_banned_term_fires_even_without_context_clues() {
     // term that the embedded ruleset would NOT flag in isolation: the
     // word "ABC" with banned=["ABC"] forces flagging.
     std::fs::write(
-        dir.path().join(".zhtw-core.toml"),
+        dir.path().join(".twlinter.toml"),
         "[glossary]\nbanned = [\"ABC\"]\n",
     )
     .unwrap();
@@ -51,7 +51,7 @@ fn glossary_banned_term_fires_even_without_context_clues() {
 fn glossary_proper_noun_suppresses_matching_issue() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join(".zhtw-core.toml"),
+        dir.path().join(".twlinter.toml"),
         "[glossary]\nproper_nouns = [\"線程\"]\n",
     )
     .unwrap();
@@ -79,7 +79,7 @@ fn glossary_proper_noun_suppresses_matching_issue() {
 fn glossary_banned_does_not_duplicate_existing_issues() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join(".zhtw-core.toml"),
+        dir.path().join(".twlinter.toml"),
         "[glossary]\nbanned = [\"線程\"]\n",
     )
     .unwrap();
@@ -109,7 +109,7 @@ fn glossary_banned_does_not_duplicate_existing_issues() {
 fn glossary_banned_is_honored_during_fix_runs() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join(".zhtw-core.toml"),
+        dir.path().join(".twlinter.toml"),
         "[glossary]\nbanned = [\"ABC\"]\n",
     )
     .unwrap();
@@ -137,7 +137,7 @@ fn glossary_banned_is_honored_during_fix_runs() {
 fn glossary_proper_nouns_are_honored_during_fix_runs() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
-        dir.path().join(".zhtw-core.toml"),
+        dir.path().join(".twlinter.toml"),
         "[glossary]\nproper_nouns = [\"線程\"]\n",
     )
     .unwrap();

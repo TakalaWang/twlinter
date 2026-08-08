@@ -1,4 +1,4 @@
-// Markdown-aware text extraction for zhtw-core linting.
+// Markdown-aware text extraction for twlinter linting.
 //
 // Uses pulldown-cmark to parse Markdown and identify regions that should be
 // excluded from linting: code blocks, inline code, HTML blocks, and YAML

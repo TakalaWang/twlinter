@@ -1,7 +1,7 @@
 #![cfg(feature = "discord")]
 
-use zhtw_core::discord_policy::{protected_spans, rewrite_is_safe};
-use zhtw_core::llm::RewriteRequest;
+use twlinter::discord_policy::{protected_spans, rewrite_is_safe};
+use twlinter::llm::RewriteRequest;
 
 #[test]
 fn protected_discord_content_must_survive_rewrite() {

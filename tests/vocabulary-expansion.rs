@@ -4,8 +4,8 @@
 // Uses the full embedded ruleset via Scanner to ensure new rules integrate
 // correctly with existing scanning logic.
 
-use zhtw_core::engine::scan::Scanner;
-use zhtw_core::rules::ruleset::{IssueType, PoliticalStance, Profile, Ruleset};
+use twlinter::engine::scan::Scanner;
+use twlinter::rules::ruleset::{IssueType, PoliticalStance, Profile, Ruleset};
 
 /// Build a scanner from the embedded ruleset used by the core API.
 fn full_scanner() -> Scanner {
@@ -268,7 +268,7 @@ fn context_clues_propagated_to_issue() {
 
 #[test]
 fn fixer_lexical_safe_skips_context_clue_rules() {
-    use zhtw_core::fixer::{apply_fixes, FixMode};
+    use twlinter::fixer::{apply_fixes, FixMode};
 
     let scanner = full_scanner();
     let text = "我需要編寫一個程序來執行";
@@ -283,8 +283,8 @@ fn fixer_lexical_safe_skips_context_clue_rules() {
 
 #[test]
 fn fixer_lexical_contextual_with_segmenter_applies_when_clues_match() {
-    use zhtw_core::engine::segment::Segmenter;
-    use zhtw_core::fixer::{apply_fixes_with_context, FixMode};
+    use twlinter::engine::segment::Segmenter;
+    use twlinter::fixer::{apply_fixes_with_context, FixMode};
 
     let json_str = include_str!("../assets/ruleset.json");
     let ruleset: Ruleset = serde_json::from_str(json_str).unwrap();
@@ -308,8 +308,8 @@ fn fixer_lexical_contextual_with_segmenter_applies_when_clues_match() {
 
 #[test]
 fn fixer_lexical_contextual_with_segmenter_skips_when_no_clues() {
-    use zhtw_core::engine::segment::Segmenter;
-    use zhtw_core::fixer::{apply_fixes_with_context, FixMode};
+    use twlinter::engine::segment::Segmenter;
+    use twlinter::fixer::{apply_fixes_with_context, FixMode};
 
     let json_str = include_str!("../assets/ruleset.json");
     let ruleset: Ruleset = serde_json::from_str(json_str).unwrap();

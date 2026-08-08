@@ -173,7 +173,7 @@
       let markedSegments = 0;
       for (const range of ranges.reverse()) {
         const mark = document.createElement("mark");
-        mark.className = `zhtw-core-highlight zhtw-core-highlight--${issue.severity}`;
+        mark.className = `twlinter-highlight twlinter-highlight--${issue.severity}`;
         mark.dataset.zhtwMcpIssue = "true";
         mark.title = tooltipForIssue(issue);
 
@@ -248,7 +248,7 @@
   }
 
   function clearHighlights() {
-    const marks = [...document.querySelectorAll("mark[data-zhtw-core-issue]")];
+    const marks = [...document.querySelectorAll("mark[data-twlinter-issue]")];
     for (const mark of marks) {
       const parent = mark.parentNode;
       if (!parent) {

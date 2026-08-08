@@ -1,4 +1,4 @@
-use zhtw_core::engine::s2t::S2TConverter;
+use twlinter::engine::s2t::S2TConverter;
 
 #[test]
 fn ambiguous_bare_and_protected_terms_do_not_overconvert() {

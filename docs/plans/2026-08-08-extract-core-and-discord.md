@@ -18,7 +18,7 @@
 
 **Step 1: Verify the source snapshot**
 
-Run: `git diff --no-index /Users/takala/code/zhtw-mcp /Users/takala/code/zhtw-discord-bot` (excluding `.git` if needed)
+Run: `git diff --no-index /Users/takala/code/zhtw-mcp /Users/takala/code/twlinter` (excluding `.git` if needed)
 
 Expected: no source-content differences before the planned changes.
 
@@ -26,7 +26,7 @@ Expected: no source-content differences before the planned changes.
 
 Run: `git status --short --branch`
 
-Expected: the new repository is on `codex/extract-zhtw-core` with the upstream import commit as its parent.
+Expected: the new repository is on `codex/extract-twlinter` with the upstream import commit as its parent.
 
 ### Task 2: Extract the reusable core boundary without rewriting engine code
 
@@ -76,7 +76,7 @@ Delete the MCP module, stdio server startup, MCP setup commands, MCP-specific te
 
 **Step 2: Run source-reference checks**
 
-Run: `rg -n "MCP|mcp|sampling|zhtw-core" src tests docs README.md Cargo.toml`
+Run: `rg -n "MCP|mcp|sampling|twlinter" src tests docs README.md Cargo.toml`
 
 Expected: no runtime MCP references; remaining historical/source attribution references are either removed or explicitly documented as upstream provenance.
 
@@ -128,7 +128,7 @@ Cover bot-message suppression, no-op replies, automatic bounded corrections, and
 
 **Step 2: Implement the adapter**
 
-Keep Discord event handling, privileged message-content configuration, rate limits, and reply formatting outside `zhtw-core`. Automatic replies use candidate decisions only; full rewriting requires an explicit command.
+Keep Discord event handling, privileged message-content configuration, rate limits, and reply formatting outside `twlinter`. Automatic replies use candidate decisions only; full rewriting requires an explicit command.
 
 **Step 3: Run focused bot checks**
 

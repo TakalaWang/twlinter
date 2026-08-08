@@ -1,5 +1,5 @@
 {
-  description = "Nix package for zhtw-core";
+  description = "Nix package for twlinter";
 
   inputs = {
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
@@ -55,7 +55,7 @@
             ]
           );
 
-        zhtw-core =
+        twlinter =
           let
             cargoToml = fromTOML (builtins.readFile ./Cargo.toml);
             rustPlatform = final.makeRustPlatform {
@@ -64,7 +64,7 @@
             };
           in
           rustPlatform.buildRustPackage {
-            pname = "zhtw-core";
+            pname = "twlinter";
             inherit (cargoToml.package) version;
 
             src = ./.;
@@ -94,9 +94,9 @@
 
             meta = with final.lib; {
               description = "Traditional Chinese (zh-TW) conversion core";
-              homepage = "https://github.com/TakalaWang/zhtw-discord-bot";
+              homepage = "https://github.com/TakalaWang/twlinter";
               license = licenses.mit;
-              mainProgram = "zhtw-core";
+              mainProgram = "twlinter";
             };
           };
       };
@@ -104,8 +104,8 @@
       packages = forEachSupportedSystem (
         { pkgs, ... }:
         {
-          inherit (pkgs) zhtw-core;
-          default = pkgs.zhtw-core;
+          inherit (pkgs) twlinter;
+          default = pkgs.twlinter;
         }
       );
 

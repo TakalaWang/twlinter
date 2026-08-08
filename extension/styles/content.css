@@ -1,4 +1,4 @@
-mark.zhtw-core-highlight {
+mark.twlinter-highlight {
   border-radius: 0.18em;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
@@ -9,17 +9,17 @@ mark.zhtw-core-highlight {
   text-underline-offset: 0.12em;
 }
 
-mark.zhtw-core-highlight--error {
+mark.twlinter-highlight--error {
   background: rgba(179, 38, 30, 0.16);
   text-decoration-color: #b3261e;
 }
 
-mark.zhtw-core-highlight--warning {
+mark.twlinter-highlight--warning {
   background: rgba(180, 119, 18, 0.18);
   text-decoration-color: #b47712;
 }
 
-mark.zhtw-core-highlight--info {
+mark.twlinter-highlight--info {
   background: rgba(55, 93, 129, 0.14);
   text-decoration-color: #375d81;
 }

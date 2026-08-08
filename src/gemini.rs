@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 use crate::llm::{ContextRequest, ContextResponse, RewriteRequest, RewriteResponse};
 
 const API_ROOT: &str = "https://generativelanguage.googleapis.com/v1beta/models";
-const USER_AGENT: &str = "zhtw-discord-bot/0.1";
+const USER_AGENT: &str = "twlinter/0.1";
 
 #[derive(Clone)]
 pub struct GeminiClient {

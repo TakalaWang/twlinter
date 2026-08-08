@@ -6,11 +6,11 @@
 // auto-converting `"` to `「`/`」` inside YAML frontmatter scalar values
 // breaks downstream parsers.
 
-use zhtw_core::engine::scan::{ContentType, Scanner};
-use zhtw_core::rules::loader::load_embedded_ruleset;
-use zhtw_core::rules::ruleset::{IssueType, Profile};
+use twlinter::engine::scan::{ContentType, Scanner};
+use twlinter::rules::loader::load_embedded_ruleset;
+use twlinter::rules::ruleset::{IssueType, Profile};
 
-fn scan_with(text: &str, exempt_blockquotes: bool) -> Vec<zhtw_core::rules::ruleset::Issue> {
+fn scan_with(text: &str, exempt_blockquotes: bool) -> Vec<twlinter::rules::ruleset::Issue> {
     let ruleset = load_embedded_ruleset().expect("embedded ruleset loads");
     let scanner = Scanner::new(ruleset.spelling_rules, ruleset.case_rules);
     let cfg = Profile::Base
