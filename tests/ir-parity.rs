@@ -335,6 +335,22 @@ fn ir_exception_suppresses_match() {
     );
 }
 
+#[test]
+fn quality_term_uses_quality_context_without_flagging_mass() {
+    let scanner = full_scanner();
+
+    let out = scanner.scan("這件商品的質量很好");
+    let issue = out
+        .issues
+        .iter()
+        .find(|issue| issue.found == "質量")
+        .expect("質量 in quality context should be flagged");
+    assert_eq!(issue.suggestions[0], "品質");
+
+    let out = scanner.scan("這個粒子的質量很大");
+    assert!(!out.issues.iter().any(|issue| issue.found == "質量"));
+}
+
 // ---------------------------------------------------------------------------
 // Superstring absorption
 // ---------------------------------------------------------------------------
