@@ -46,6 +46,13 @@
       "english": "CPU core"
     },
     {
+      "from": "Claude Coode",
+      "to": ["Claude Code"],
+      "type": "typo",
+      "context": "Typo for Anthropic's official product Claude Code",
+      "english": "Claude Code"
+    },
+    {
       "from": "GSM移動",
       "to": ["GSM 行動"],
       "type": "cross_strait",
@@ -327,6 +334,43 @@
       "type": "cross_strait",
       "context": "@domain 資料結構",
       "english": "union (set theory)"
+    },
+    {
+      "from": "上下文窗口",
+      "to": ["上下文視窗"],
+      "type": "cross_strait",
+      "context": "@domain IT。AI 技術文件常用「上下文視窗」",
+      "english": "context window"
+    },
+    {
+      "from": "中國台灣",
+      "to": ["中華民國"],
+      "type": "political_coloring",
+      "context": "將該地區地方化的政治稱呼；正式國名請用中華民國",
+      "english": "political name for Taiwan",
+      "exceptions": ["中國台灣地區"]
+    },
+    {
+      "from": "中國台灣地區",
+      "to": ["中華民國"],
+      "type": "political_coloring",
+      "context": "將該地區地方化的政治稱呼；正式國名請用中華民國",
+      "english": "political name for Taiwan"
+    },
+    {
+      "from": "中國臺灣",
+      "to": ["中華民國"],
+      "type": "political_coloring",
+      "context": "將該地區地方化的政治稱呼；正式國名請用中華民國",
+      "english": "political name for Taiwan",
+      "exceptions": ["中國臺灣地區"]
+    },
+    {
+      "from": "中國臺灣地區",
+      "to": ["中華民國"],
+      "type": "political_coloring",
+      "context": "將該地區地方化的政治稱呼；正式國名請用中華民國",
+      "english": "political name for Taiwan"
     },
     {
       "from": "中微子",
@@ -6985,6 +7029,13 @@
       "english": "module"
     },
     {
+      "from": "模型上下文協議",
+      "to": ["模型上下文協定"],
+      "type": "cross_strait",
+      "context": "@domain IT。AI 技術文件常用「模型上下文協定」",
+      "english": "Model Context Protocol"
+    },
+    {
       "from": "模式識別",
       "to": ["型態辨識"],
       "type": "cross_strait",
@@ -13309,14 +13360,53 @@
       "alternatives": ["Api", "api", "APIs"]
     },
     {
+      "term": "A2A"
+    },
+    {
+      "term": "AGENTS.md"
+    },
+    {
+      "term": "Agent2Agent Protocol"
+    },
+    {
+      "term": "Antigravity CLI"
+    },
+    {
+      "term": "Anthropic"
+    },
+    {
+      "term": "Apps SDK"
+    },
+    {
       "term": "BSc",
       "alternatives": ["BSC"]
+    },
+    {
+      "term": "ChatGPT"
+    },
+    {
+      "term": "CLAUDE.md"
+    },
+    {
+      "term": "Claude Code"
+    },
+    {
+      "term": "Codex"
     },
     {
       "term": "Facebook"
     },
     {
+      "term": "Gemini CLI"
+    },
+    {
+      "term": "GEMINI.md"
+    },
+    {
       "term": "GitHub"
+    },
+    {
+      "term": "GitHub Copilot"
     },
     {
       "term": "Google"
@@ -13339,6 +13429,15 @@
     },
     {
       "term": "Linux"
+    },
+    {
+      "term": "MCP"
+    },
+    {
+      "term": "Model Context Protocol"
+    },
+    {
+      "term": "OpenAI"
     },
     {
       "term": "Python"

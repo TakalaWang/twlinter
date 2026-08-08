@@ -112,6 +112,19 @@ fn multiple_countries_in_prose() {
     assert!(founds.contains(&"新西蘭"));
 }
 
+#[test]
+fn political_names_for_taiwan_use_roc() {
+    let scanner = full_scanner();
+    for term in ["中國台灣", "中國臺灣", "中國台灣地區", "中國臺灣地區"] {
+        let issues = scanner.scan(term).issues;
+        let issue = issues
+            .iter()
+            .find(|i| i.found == term)
+            .unwrap_or_else(|| panic!("missing political-name issue for {term}"));
+        assert_eq!(issue.suggestions[..], ["中華民國"]);
+    }
+}
+
 // Clean text should not trigger
 #[test]
 fn tw_country_names_clean() {
@@ -153,6 +166,48 @@ fn existing_it_rules_still_fire() {
     let scanner = full_scanner();
     let issues = scanner.scan("這個軟件需要更新").issues;
     assert!(issues.iter().any(|i| i.found == "軟件"));
+}
+
+#[test]
+fn current_ai_product_and_protocol_names_use_canonical_case() {
+    let scanner = full_scanner();
+    let cases = [
+        ("codex", "Codex"),
+        ("claude code", "Claude Code"),
+        ("gemini cli", "Gemini CLI"),
+        ("github copilot", "GitHub Copilot"),
+        ("openai", "OpenAI"),
+        ("chatgpt", "ChatGPT"),
+        ("mcp", "MCP"),
+        ("model context protocol", "Model Context Protocol"),
+        ("a2a", "A2A"),
+        ("agents.md", "AGENTS.md"),
+        ("agent2agent protocol", "Agent2Agent Protocol"),
+        ("antigravity cli", "Antigravity CLI"),
+        ("apps sdk", "Apps SDK"),
+        ("claude.md", "CLAUDE.md"),
+        ("gemini.md", "GEMINI.md"),
+    ];
+
+    for (wrong, expected) in cases {
+        let issues = scanner.scan(wrong).issues;
+        let issue = issues
+            .iter()
+            .find(|i| i.found.eq_ignore_ascii_case(wrong))
+            .unwrap_or_else(|| panic!("missing case issue for {wrong}"));
+        assert_eq!(issue.suggestions[..], [expected.to_string()]);
+    }
+}
+
+#[test]
+fn claude_code_typo_is_detected() {
+    let scanner = full_scanner();
+    let issues = scanner.scan("請使用 Claude Coode 審查這個專案").issues;
+    let issue = issues
+        .iter()
+        .find(|i| i.found == "Claude Coode")
+        .expect("Claude Coode should be detected as a typo");
+    assert_eq!(issue.suggestions[..], ["Claude Code"]);
 }
 
 #[test]
