@@ -1,0 +1,43 @@
+name: Bug report
+description: Report a reproducible problem in TWLinter.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please remove secrets, private message content, and sensitive URLs before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Which TWLinter release or commit was used?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Rust version, and adapter (CLI, extension, or Discord bot).
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide a minimal redacted input and exact command or steps.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true

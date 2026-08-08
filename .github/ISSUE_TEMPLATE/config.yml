@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a usage or design question
+    url: https://github.com/TakalaWang/twlinter/discussions
+    about: Please use Discussions for questions and design proposals.
+  - name: Report a security vulnerability
+    url: https://github.com/TakalaWang/twlinter/security/advisories/new
+    about: Please report vulnerabilities privately instead of opening a public issue.
