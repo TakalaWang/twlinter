@@ -11303,7 +11303,7 @@
       "type": "cross_strait",
       "context": "@domain IT。「質量」在 tw 僅指 mass (物理量)，與 quality 語意不同",
       "english": "quality",
-      "context_clues": ["保證", "管理", "控制", "提升", "改善", "軟件", "軟體", "產品", "服務", "測試"]
+      "context_clues": ["保證", "管理", "控制", "提升", "改善", "軟件", "軟體", "產品", "商品", "服務", "測試", "很好"]
     },
     {
       "from": "質量管理",
