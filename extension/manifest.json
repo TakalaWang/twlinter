@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "twlinter Page Checker",
+  "name": "TWLinter Page Checker",
   "description": "Validate visible page text for non-standard Traditional Chinese usage.",
   "version": "0.1.0",
   "permissions": ["activeTab", "scripting", "storage"],

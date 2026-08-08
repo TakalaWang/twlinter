@@ -1,5 +1,5 @@
 {
-  description = "Nix package for twlinter";
+  description = "Nix package for TWLinter";
 
   inputs = {
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";

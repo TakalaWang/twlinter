@@ -1,4 +1,4 @@
-# twlinter
+# TWLinter
 
 A Traditional Chinese (zh-TW) linter and conversion core for correcting
 Mainland Chinese terminology, punctuation, character variants, and common
@@ -96,4 +96,4 @@ transport protocol.
 
 ## License
 
-twlinter is available under the MIT license. See LICENSE.
+TWLinter is available under the MIT license. See LICENSE.
