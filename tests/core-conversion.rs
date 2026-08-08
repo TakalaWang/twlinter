@@ -12,6 +12,24 @@ fn core_reuses_upstream_rules_and_applies_deterministic_fixes() {
 }
 
 #[test]
+fn core_converts_code_in_programming_context() {
+    let engine = CoreEngine::from_embedded(CoreOptions::default()).unwrap();
+    let analysis = engine.analyze("這段代碼需要編譯。");
+    let result = engine.apply(&analysis, &[]).unwrap();
+
+    assert_eq!(result.text, "這段程式碼需要編譯。");
+}
+
+#[test]
+fn core_converts_current_ai_terms() {
+    let engine = CoreEngine::from_embedded(CoreOptions::default()).unwrap();
+    let analysis = engine.analyze("模型上下文协议的上下文窗口很大。");
+    let result = engine.apply(&analysis, &[]).unwrap();
+
+    assert_eq!(result.text, "模型上下文協定的上下文視窗很大。");
+}
+
+#[test]
 fn core_accepts_only_existing_candidates_from_external_decisions() {
     let engine = CoreEngine::from_embedded(CoreOptions::default()).unwrap();
     let analysis = engine.analyze("這個程序會編譯原始碼。");
