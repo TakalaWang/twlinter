@@ -6,8 +6,8 @@ use anyhow::{Context as _, Result};
 use serenity::all::{
     Client, CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType,
     Context, CreateAllowedMentions, CreateCommand, CreateCommandOption, CreateInteractionResponse,
-    CreateInteractionResponseMessage, CreateMessage, EventHandler, GatewayIntents, Interaction,
-    Message, MessageType, Permissions, Ready,
+    CreateInteractionResponseMessage, CreateMessage, CreateWebhook, EventHandler, ExecuteWebhook,
+    GatewayIntents, Interaction, Member, Message, MessageType, Permissions, Ready,
 };
 use serenity::async_trait;
 
@@ -15,7 +15,10 @@ use twlinter::core::{CoreAnalysis, CoreEngine, CoreOptions};
 use twlinter::discord_config::{
     set_feature, spelling_rule, ChannelConfig, DiscordConfig, DiscordLinter, ServerConfig,
 };
-use twlinter::discord_policy::{automatic_reply, rewrite_is_safe, rewrite_reply, rewrite_request};
+use twlinter::discord_policy::{
+    automatic_replacement, automatic_reply, rewrite_is_safe, rewrite_replacement, rewrite_reply,
+    rewrite_request,
+};
 use twlinter::engine::disambig::DisambigStats;
 use twlinter::gemini::GeminiClient;
 use twlinter::llm::{validate_context_response, ContextRequest};
@@ -101,8 +104,8 @@ impl EventHandler for Handler {
             }
         };
 
-        let reply = if result.changed {
-            self.contextual_reply(
+        let replacement = if result.changed {
+            self.contextual_replacement(
                 &message.content,
                 &analysis,
                 &result,
@@ -115,14 +118,17 @@ impl EventHandler for Handler {
             None
         };
 
-        if let Some(reply) = reply {
-            let outbound = CreateMessage::new()
-                .content(reply)
-                .reference_message(&message)
-                .allowed_mentions(CreateAllowedMentions::new());
-            if let Err(error) = message.channel_id.send_message(&ctx.http, outbound).await {
-                tracing::warn!(%error, "failed to send Discord reply");
+        if let Some(replacement) = replacement {
+            if webhook_identity(&message).is_some()
+                && self.replace_message(&ctx, &message, &replacement).await
+            {
+                return;
             }
+
+            self.send_reply(&ctx, &message, rewrite_reply(&replacement))
+                .await;
+        } else if let Some(reply) = automatic_reply(&result) {
+            self.send_reply(&ctx, &message, reply).await;
         }
     }
 
@@ -161,7 +167,7 @@ impl Handler {
         }
     }
 
-    async fn contextual_reply(
+    async fn contextual_replacement(
         &self,
         source: &str,
         analysis: &twlinter::core::CoreAnalysis,
@@ -171,10 +177,10 @@ impl Handler {
         allow_rewrite: bool,
     ) -> Option<String> {
         if !allow_rewrite {
-            return automatic_reply(result);
+            return automatic_replacement(result);
         }
         let Some(gemini) = &self.gemini else {
-            return automatic_reply(result);
+            return automatic_replacement(result);
         };
 
         let request = rewrite_request(source, &result.text, analysis);
@@ -189,20 +195,88 @@ impl Handler {
                         .lint(&response.rewritten_text, server, channel)
                         .is_some_and(|lint| lint.output.issues.is_empty()) =>
             {
-                Some(rewrite_reply(&response.rewritten_text))
+                rewrite_replacement(&response.rewritten_text)
             }
             Ok(Ok(_)) => {
                 tracing::warn!("discarding unsafe or invalid Gemini rewrite");
-                automatic_reply(result)
+                automatic_replacement(result)
             }
             Ok(Err(error)) => {
-                tracing::warn!(%error, "Gemini rewrite failed; using deterministic reply");
-                automatic_reply(result)
+                tracing::warn!(%error, "Gemini rewrite failed; using deterministic replacement");
+                automatic_replacement(result)
             }
             Err(error) => {
-                tracing::warn!(%error, "Gemini rewrite worker failed; using deterministic reply");
-                automatic_reply(result)
+                tracing::warn!(%error, "Gemini rewrite worker failed; using deterministic replacement");
+                automatic_replacement(result)
             }
+        }
+    }
+
+    async fn replace_message(&self, ctx: &Context, source: &Message, content: &str) -> bool {
+        let Some((username, avatar_url)) = webhook_identity(source) else {
+            return false;
+        };
+
+        // ponytail: create/delete per replacement keeps webhook tokens transient; cache per
+        // channel only if message volume makes webhook rate limits matter.
+        let webhook = match source
+            .channel_id
+            .create_webhook(&ctx.http, CreateWebhook::new("TWLinter rewrite"))
+            .await
+        {
+            Ok(webhook) => webhook,
+            Err(error) => {
+                tracing::warn!(%error, "failed to create rewrite webhook");
+                return false;
+            }
+        };
+        let sent = match webhook
+            .execute(
+                &ctx.http,
+                true,
+                ExecuteWebhook::new()
+                    .content(content)
+                    .username(username)
+                    .avatar_url(avatar_url)
+                    .allowed_mentions(CreateAllowedMentions::new()),
+            )
+            .await
+        {
+            Ok(Some(sent)) => sent,
+            Ok(None) => {
+                tracing::warn!("rewrite webhook returned no message");
+                let _ = webhook.delete(&ctx.http).await;
+                return false;
+            }
+            Err(error) => {
+                tracing::warn!(%error, "failed to send rewrite webhook");
+                let _ = webhook.delete(&ctx.http).await;
+                return false;
+            }
+        };
+
+        if let Err(error) = source.delete(&ctx.http).await {
+            tracing::warn!(%error, "failed to delete source message after webhook send");
+            if let Err(cleanup_error) = webhook.delete_message(&ctx.http, None, sent.id).await {
+                tracing::warn!(%cleanup_error, "failed to clean up replacement message");
+            }
+            let _ = webhook.delete(&ctx.http).await;
+            return false;
+        }
+
+        if let Err(error) = webhook.delete(&ctx.http).await {
+            tracing::warn!(%error, "failed to delete temporary rewrite webhook");
+        }
+        true
+    }
+
+    async fn send_reply(&self, ctx: &Context, message: &Message, reply: String) {
+        let outbound = CreateMessage::new()
+            .content(reply)
+            .reference_message(message)
+            .allowed_mentions(CreateAllowedMentions::new());
+        if let Err(error) = message.channel_id.send_message(&ctx.http, outbound).await {
+            tracing::warn!(%error, "failed to send Discord reply");
         }
     }
 
@@ -319,6 +393,32 @@ impl Handler {
         };
         respond_ephemeral(ctx, &command, response).await;
     }
+}
+
+fn webhook_identity(message: &Message) -> Option<(String, String)> {
+    if message.guild_id.is_none()
+        || message.member.is_none()
+        || !message.attachments.is_empty()
+        || !message.embeds.is_empty()
+        || message.message_reference.is_some()
+        || message.poll.is_some()
+        || !message.sticker_items.is_empty()
+    {
+        return None;
+    }
+
+    let partial_member = message.member.as_ref()?;
+    let username = partial_member
+        .nick
+        .as_deref()
+        .or(message.author.global_name.as_deref())
+        .unwrap_or(&message.author.name)
+        .to_string();
+    let mut partial_member = (**partial_member).clone();
+    partial_member.user = Some(message.author.clone());
+    partial_member.guild_id = message.guild_id;
+    let member: Member = partial_member.into();
+    Some((username, member.face()))
 }
 
 fn configuration_command() -> CreateCommand {
