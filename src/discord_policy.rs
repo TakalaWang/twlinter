@@ -45,6 +45,18 @@ pub fn rewrite_request(
                 context: issue.context.as_deref().map(str::to_string),
                 english: issue.english.as_deref().map(str::to_string),
                 context_clues: issue.context_clues.as_deref().unwrap_or_default().to_vec(),
+                negative_context_clues: issue
+                    .negative_context_clues
+                    .as_deref()
+                    .unwrap_or_default()
+                    .to_vec(),
+                positional_clues: issue
+                    .positional_clues
+                    .as_deref()
+                    .unwrap_or_default()
+                    .to_vec(),
+                exceptions: issue.exceptions.as_deref().unwrap_or_default().to_vec(),
+                tags: issue.tags.as_deref().unwrap_or_default().to_vec(),
             })
             .collect(),
         protected_spans: protected_spans(original),

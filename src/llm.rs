@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::core::CoreAnalysis;
-use crate::rules::ruleset::Tier2Outcome;
+use crate::rules::ruleset::IssueType;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContextRequest {
@@ -20,6 +20,10 @@ pub struct ContextIssue {
     pub context: Option<String>,
     pub english: Option<String>,
     pub context_clues: Vec<String>,
+    pub negative_context_clues: Vec<String>,
+    pub positional_clues: Vec<String>,
+    pub exceptions: Vec<String>,
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,7 +35,7 @@ pub struct ContextResponse {
 pub struct ContextDecision {
     pub offset: usize,
     pub found: String,
-    pub selected: String,
+    pub selected: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -63,7 +67,16 @@ impl ContextRequest {
                 .issues
                 .iter()
                 .filter(|issue| {
-                    issue.suggestions.len() > 1 || issue.tier2_outcome == Tier2Outcome::GrayZone
+                    matches!(
+                        issue.rule_type,
+                        IssueType::PoliticalColoring
+                            | IssueType::CrossStrait
+                            | IssueType::Typo
+                            | IssueType::Confusable
+                            | IssueType::Variant
+                            | IssueType::AiStyle
+                            | IssueType::Translationese
+                    )
                 })
                 .map(|issue| ContextIssue {
                     offset: issue.offset,
@@ -72,6 +85,18 @@ impl ContextRequest {
                     context: issue.context.as_deref().map(str::to_string),
                     english: issue.english.as_deref().map(str::to_string),
                     context_clues: issue.context_clues.as_deref().unwrap_or_default().to_vec(),
+                    negative_context_clues: issue
+                        .negative_context_clues
+                        .as_deref()
+                        .unwrap_or_default()
+                        .to_vec(),
+                    positional_clues: issue
+                        .positional_clues
+                        .as_deref()
+                        .unwrap_or_default()
+                        .to_vec(),
+                    exceptions: issue.exceptions.as_deref().unwrap_or_default().to_vec(),
+                    tags: issue.tags.as_deref().unwrap_or_default().to_vec(),
                 })
                 .collect(),
         }
@@ -91,10 +116,12 @@ pub fn validate_context_response(
             .iter()
             .find(|issue| issue.offset == decision.offset && issue.found == decision.found)
             .ok_or_else(|| anyhow::anyhow!("LLM decision does not match an issue"))?;
-        anyhow::ensure!(
-            issue.suggestions.iter().any(|s| s == &decision.selected),
-            "LLM selected a term outside the ruleset candidate list"
-        );
+        if let Some(selected) = &decision.selected {
+            anyhow::ensure!(
+                issue.suggestions.iter().any(|s| s == selected),
+                "LLM selected a term outside the ruleset candidate list"
+            );
+        }
         decisions.push(crate::core::IssueDecision {
             offset: decision.offset,
             found: decision.found,

@@ -147,6 +147,10 @@ pub struct CompiledSpellingDb {
     pub spelling_english: Vec<Option<Arc<str>>>,
     /// Pre-interned context clues per rule.  Arc bump during inflation.
     pub spelling_context_clues: Vec<Option<Arc<[String]>>>,
+    pub spelling_negative_context_clues: Vec<Option<Arc<[String]>>>,
+    pub spelling_positional_clues: Vec<Option<Arc<[String]>>>,
+    pub spelling_exceptions: Vec<Option<Arc<[String]>>>,
+    pub spelling_tags: Vec<Option<Arc<[String]>>>,
     /// Per-rule editorial confidence (35.2).  Plain copy at inflation
     /// time — `EditorialConfidence` is `Copy`, so no Arc needed.
     pub spelling_editorial_confidence: Vec<Option<crate::rules::ruleset::EditorialConfidence>>,
@@ -183,6 +187,10 @@ impl CompiledSpellingDb {
             spelling_contexts: Vec::new(),
             spelling_english: Vec::new(),
             spelling_context_clues: Vec::new(),
+            spelling_negative_context_clues: Vec::new(),
+            spelling_positional_clues: Vec::new(),
+            spelling_exceptions: Vec::new(),
+            spelling_tags: Vec::new(),
             spelling_editorial_confidence: Vec::new(),
             rule_pos_clue_ids: Vec::new(),
             rule_neg_clue_ids: Vec::new(),
@@ -623,6 +631,14 @@ fn inflate_spelling_issues_inner(
                 issue
                     .context_clues
                     .clone_from(&db.spelling_context_clues[idx]);
+                issue
+                    .negative_context_clues
+                    .clone_from(&db.spelling_negative_context_clues[idx]);
+                issue
+                    .positional_clues
+                    .clone_from(&db.spelling_positional_clues[idx]);
+                issue.exceptions.clone_from(&db.spelling_exceptions[idx]);
+                issue.tags.clone_from(&db.spelling_tags[idx]);
             }
         }
     }
@@ -760,6 +776,27 @@ pub fn compile_spelling_rules_filtered(
     let spelling_context_clues: Vec<Option<Arc<[String]>>> = spelling_rules
         .iter()
         .map(|r| r.context_clues.as_ref().map(|v| Arc::from(v.as_slice())))
+        .collect();
+
+    let spelling_negative_context_clues = spelling_rules
+        .iter()
+        .map(|r| {
+            r.negative_context_clues
+                .as_ref()
+                .map(|v| Arc::from(v.as_slice()))
+        })
+        .collect();
+    let spelling_positional_clues = spelling_rules
+        .iter()
+        .map(|r| r.positional_clues.as_ref().map(|v| Arc::from(v.as_slice())))
+        .collect();
+    let spelling_exceptions = spelling_rules
+        .iter()
+        .map(|r| r.exceptions.as_ref().map(|v| Arc::from(v.as_slice())))
+        .collect();
+    let spelling_tags = spelling_rules
+        .iter()
+        .map(|r| r.tags.as_ref().map(|v| Arc::from(v.as_slice())))
         .collect();
 
     let spelling_editorial_confidence: Vec<Option<crate::rules::ruleset::EditorialConfidence>> =
@@ -1086,6 +1123,10 @@ pub fn compile_spelling_rules_filtered(
         spelling_contexts,
         spelling_english,
         spelling_context_clues,
+        spelling_negative_context_clues,
+        spelling_positional_clues,
+        spelling_exceptions,
+        spelling_tags,
         spelling_editorial_confidence,
         rule_pos_clue_ids,
         rule_neg_clue_ids,

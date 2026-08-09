@@ -32,7 +32,7 @@ fn core_converts_current_ai_terms() {
 #[test]
 fn core_accepts_only_existing_candidates_from_external_decisions() {
     let engine = CoreEngine::from_embedded(CoreOptions::default()).unwrap();
-    let analysis = engine.analyze("這個程序會編譯原始碼。");
+    let analysis = engine.analyze("這個程序會編譯。");
     let issue = analysis
         .issues
         .iter()
@@ -51,7 +51,7 @@ fn core_accepts_only_existing_candidates_from_external_decisions() {
             &[IssueDecision {
                 offset: issue.offset,
                 found: issue.found.clone(),
-                selected,
+                selected: Some(selected),
             }],
         )
         .unwrap();
@@ -75,10 +75,35 @@ fn core_rejects_an_external_candidate_not_present_in_ruleset() {
             &[IssueDecision {
                 offset: issue.offset,
                 found: issue.found.clone(),
-                selected: "不在規則中的詞".to_string(),
+                selected: Some("不在規則中的詞".to_string()),
             }],
         )
         .unwrap_err();
 
     assert!(error.to_string().contains("not an allowed suggestion"));
+}
+
+#[test]
+fn core_accepts_an_llm_decision_to_keep_the_original_term() {
+    let engine = CoreEngine::from_embedded(CoreOptions::default()).unwrap();
+    let analysis = engine.analyze("這個程序會編譯。");
+    let issue = analysis
+        .issues
+        .iter()
+        .find(|issue| issue.found == "程序")
+        .unwrap();
+
+    let result = engine
+        .apply(
+            &analysis,
+            &[IssueDecision {
+                offset: issue.offset,
+                found: issue.found.clone(),
+                selected: None,
+            }],
+        )
+        .unwrap();
+
+    assert_eq!(result.text, analysis.normalized_text);
+    assert!(!result.changed);
 }
