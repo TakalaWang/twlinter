@@ -99,8 +99,15 @@ impl EventHandler for Handler {
         };
 
         let reply = if result.changed {
-            self.contextual_reply(&message.content, &analysis, &result, &server, channel)
-                .await
+            self.contextual_reply(
+                &message.content,
+                &analysis,
+                &result,
+                &server,
+                channel,
+                decisions.iter().all(|decision| decision.selected.is_some()),
+            )
+            .await
         } else {
             None
         };
@@ -158,7 +165,11 @@ impl Handler {
         result: &twlinter::core::CoreResult,
         server: &ServerConfig,
         channel: ChannelConfig,
+        allow_rewrite: bool,
     ) -> Option<String> {
+        if !allow_rewrite {
+            return automatic_reply(result);
+        }
         let Some(gemini) = &self.gemini else {
             return automatic_reply(result);
         };

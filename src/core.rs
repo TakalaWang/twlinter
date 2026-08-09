@@ -131,13 +131,13 @@ pub struct CoreAnalysis {
     pub disambiguation: DisambigStats,
 }
 
-/// A bounded external decision.  `selected` must be one of the issue's
-/// existing suggestions; the core rejects anything else.
+/// A bounded external decision. `selected = None` keeps the original text;
+/// otherwise it must be one of the issue's existing suggestions.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IssueDecision {
     pub offset: usize,
     pub found: String,
-    pub selected: String,
+    pub selected: Option<String>,
 }
 
 /// User-visible conversion result after re-scanning the output.
@@ -162,13 +162,17 @@ fn apply_decisions(issues: &mut [Issue], decisions: &[IssueDecision]) -> Result<
                 decision.found
             );
         };
-        ensure!(
-            issue.suggestions.iter().any(|s| s == &decision.selected),
-            "LLM selected {:?}, which is not an allowed suggestion for {:?}",
-            decision.selected,
-            issue.found
-        );
-        issue.suggestions = Arc::from(vec![decision.selected.clone()]);
+        if let Some(selected) = &decision.selected {
+            ensure!(
+                issue.suggestions.iter().any(|s| s == selected),
+                "LLM selected {:?}, which is not an allowed suggestion for {:?}",
+                selected,
+                issue.found
+            );
+            issue.suggestions = Arc::from(vec![selected.clone()]);
+        } else {
+            issue.suggestions = Arc::from(Vec::<String>::new());
+        }
         issue.llm_judged = true;
     }
     Ok(())

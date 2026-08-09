@@ -574,6 +574,18 @@ pub struct Issue {
     /// Arc-interned during inflation to avoid per-issue Vec clones.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub context_clues: Option<Arc<[String]>>,
+    /// Negative context conditions from the triggering ruleset rule.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub negative_context_clues: Option<Arc<[String]>>,
+    /// Positional context conditions from the triggering ruleset rule.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub positional_clues: Option<Arc<[String]>>,
+    /// Exception phrases from the triggering ruleset rule.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exceptions: Option<Arc<[String]>>,
+    /// Rule tags from the triggering ruleset rule.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Arc<[String]>>,
     /// Calibration result from translation verification.
     /// `Some(true)`: anchor found in translation (confirmed).
     /// `Some(false)`: anchor absent in translation (unconfirmed).
@@ -664,6 +676,10 @@ impl Issue {
             context: None,
             english: None,
             context_clues: None,
+            negative_context_clues: None,
+            positional_clues: None,
+            exceptions: None,
+            tags: None,
             anchor_match: None,
             glossary_banned: false,
             tier2_outcome: Tier2Outcome::NotEligible,
@@ -702,6 +718,10 @@ impl Issue {
             context: None,
             english: None,
             context_clues: None,
+            negative_context_clues: None,
+            positional_clues: None,
+            exceptions: None,
+            tags: None,
             anchor_match: None,
             glossary_banned: false,
             tier2_outcome: Tier2Outcome::NotEligible,

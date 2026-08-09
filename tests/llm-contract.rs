@@ -14,7 +14,7 @@ fn context_response_is_limited_to_ruleset_candidates() {
             decisions: vec![ContextDecision {
                 offset: issue.offset,
                 found: issue.found.clone(),
-                selected: issue.suggestions[0].clone(),
+                selected: Some(issue.suggestions[0].clone()),
             }],
         },
     )
@@ -27,9 +27,38 @@ fn context_response_is_limited_to_ruleset_candidates() {
             decisions: vec![ContextDecision {
                 offset: issue.offset,
                 found: issue.found.clone(),
-                selected: "模型自行發明的詞".to_string(),
+                selected: Some("模型自行發明的詞".to_string()),
             }],
         },
     );
     assert!(invalid.is_err());
+}
+
+#[test]
+fn context_request_carries_ruleset_conditions_and_allows_keep() {
+    let engine = CoreEngine::from_embedded(CoreOptions::default()).unwrap();
+    let text = "這段程式碼會呼叫函數。";
+    let analysis = engine.analyze(text);
+    let request = ContextRequest::from_analysis(text, &analysis);
+    let issue = request
+        .issues
+        .iter()
+        .find(|issue| issue.found == "函數")
+        .unwrap();
+
+    assert!(!issue.context_clues.is_empty());
+    assert!(!issue.negative_context_clues.is_empty());
+    assert!(!issue.exceptions.is_empty());
+    let decisions = validate_context_response(
+        &request,
+        ContextResponse {
+            decisions: vec![ContextDecision {
+                offset: issue.offset,
+                found: issue.found.clone(),
+                selected: None,
+            }],
+        },
+    )
+    .unwrap();
+    assert_eq!(decisions[0].selected, None);
 }
