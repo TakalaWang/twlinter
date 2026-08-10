@@ -123,7 +123,7 @@ fn rewrite_response_schema() -> Value {
 fn generation_config(model: &str, response_schema: Value) -> Value {
     let mut config = json!({
         "responseMimeType": "application/json",
-        "responseSchema": response_schema
+        "responseJsonSchema": response_schema
     });
     if let Some(thinking) = thinking_config(model) {
         config["thinkingConfig"] = thinking;
@@ -183,7 +183,7 @@ mod tests {
         let config = generation_config("gemini-3.5-flash-lite", rewrite_response_schema());
         assert_eq!(config["responseMimeType"], "application/json");
         assert_eq!(
-            config["responseSchema"]["required"],
+            config["responseJsonSchema"]["required"],
             json!(["rewritten_text"])
         );
         assert_eq!(config["thinkingConfig"], json!({"thinkingLevel": "medium"}));
