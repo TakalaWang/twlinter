@@ -19,11 +19,26 @@ pub fn automatic_reply(result: &CoreResult) -> Option<String> {
     Some(format!("{REPLY_PREFIX}\n{}", result.text))
 }
 
+pub fn automatic_replacement(result: &CoreResult) -> Option<String> {
+    if !result.changed || result.text.is_empty() {
+        return None;
+    }
+    bounded_replacement(&result.text)
+}
+
 pub fn rewrite_reply(text: &str) -> String {
     if text.chars().count() > DISCORD_BODY_LIMIT {
         return OVERSIZE_REPLY.to_string();
     }
     format!("{REPLY_PREFIX}\n{text}")
+}
+
+pub fn rewrite_replacement(text: &str) -> Option<String> {
+    bounded_replacement((!text.is_empty()).then_some(text)?)
+}
+
+fn bounded_replacement(text: &str) -> Option<String> {
+    (text.chars().count() <= DISCORD_BODY_LIMIT).then(|| text.to_string())
 }
 
 pub fn rewrite_request(
