@@ -20,7 +20,10 @@ pub fn automatic_reply(result: &CoreResult) -> Option<String> {
 }
 
 pub fn automatic_replacement(result: &CoreResult) -> Option<String> {
-    bounded_replacement(result.changed.then_some(result.text.as_str())?)
+    if !result.changed || result.text.is_empty() {
+        return None;
+    }
+    bounded_replacement(&result.text)
 }
 
 pub fn rewrite_reply(text: &str) -> String {

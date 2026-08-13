@@ -7,7 +7,7 @@ use serenity::all::{
     Client, CommandDataOption, CommandDataOptionValue, CommandInteraction, CommandOptionType,
     Context, CreateAllowedMentions, CreateCommand, CreateCommandOption, CreateInteractionResponse,
     CreateInteractionResponseMessage, CreateMessage, CreateWebhook, EventHandler, ExecuteWebhook,
-    GatewayIntents, Interaction, Member, Message, MessageType, Permissions, Ready,
+    GatewayIntents, Interaction, Member, Message, MessageId, MessageType, Permissions, Ready,
 };
 use serenity::async_trait;
 
@@ -119,10 +119,11 @@ impl EventHandler for Handler {
         };
 
         if let Some(replacement) = replacement {
-            if webhook_identity(&message).is_some()
-                && self.replace_message(&ctx, &message, &replacement).await
-            {
-                return;
+            if webhook_identity(&message).is_some() {
+                match self.replace_message(&ctx, &message, &replacement).await {
+                    Ok(true) | Err(()) => return,
+                    Ok(false) => {}
+                }
             }
 
             self.send_reply(&ctx, &message, rewrite_reply(&replacement))
@@ -212,9 +213,14 @@ impl Handler {
         }
     }
 
-    async fn replace_message(&self, ctx: &Context, source: &Message, content: &str) -> bool {
+    async fn replace_message(
+        &self,
+        ctx: &Context,
+        source: &Message,
+        content: &str,
+    ) -> Result<bool, ()> {
         let Some((username, avatar_url)) = webhook_identity(source) else {
-            return false;
+            return Ok(false);
         };
 
         // ponytail: create/delete per replacement keeps webhook tokens transient; cache per
@@ -227,7 +233,7 @@ impl Handler {
             Ok(webhook) => webhook,
             Err(error) => {
                 tracing::warn!(%error, "failed to create rewrite webhook");
-                return false;
+                return Ok(false);
             }
         };
         let sent = match webhook
@@ -245,29 +251,67 @@ impl Handler {
             Ok(Some(sent)) => sent,
             Ok(None) => {
                 tracing::warn!("rewrite webhook returned no message");
-                let _ = webhook.delete(&ctx.http).await;
-                return false;
+                self.delete_webhook_with_retry(&ctx.http, &webhook).await;
+                return Ok(false);
             }
             Err(error) => {
                 tracing::warn!(%error, "failed to send rewrite webhook");
-                let _ = webhook.delete(&ctx.http).await;
-                return false;
+                self.delete_webhook_with_retry(&ctx.http, &webhook).await;
+                return Ok(false);
             }
         };
 
         if let Err(error) = source.delete(&ctx.http).await {
             tracing::warn!(%error, "failed to delete source message after webhook send");
-            if let Err(cleanup_error) = webhook.delete_message(&ctx.http, None, sent.id).await {
-                tracing::warn!(%cleanup_error, "failed to clean up replacement message");
+            if !self
+                .delete_webhook_message_with_retry(&ctx.http, &webhook, sent.id)
+                .await
+            {
+                tracing::error!(
+                    "replacement cleanup failed after source deletion failed; skipping fallback"
+                );
+                self.delete_webhook_with_retry(&ctx.http, &webhook).await;
+                return Err(());
             }
-            let _ = webhook.delete(&ctx.http).await;
-            return false;
+            self.delete_webhook_with_retry(&ctx.http, &webhook).await;
+            return Ok(false);
         }
 
-        if let Err(error) = webhook.delete(&ctx.http).await {
-            tracing::warn!(%error, "failed to delete temporary rewrite webhook");
+        self.delete_webhook_with_retry(&ctx.http, &webhook).await;
+        Ok(true)
+    }
+
+    async fn delete_webhook_message_with_retry(
+        &self,
+        http: &serenity::http::Http,
+        webhook: &serenity::all::Webhook,
+        message_id: MessageId,
+    ) -> bool {
+        for attempt in 1..=3 {
+            match webhook.delete_message(http, None, message_id).await {
+                Ok(()) => return true,
+                Err(error) => {
+                    tracing::warn!(%error, attempt, "failed to clean up replacement message")
+                }
+            }
         }
-        true
+        false
+    }
+
+    async fn delete_webhook_with_retry(
+        &self,
+        http: &serenity::http::Http,
+        webhook: &serenity::all::Webhook,
+    ) -> bool {
+        for attempt in 1..=3 {
+            match webhook.delete(http).await {
+                Ok(()) => return true,
+                Err(error) => {
+                    tracing::warn!(%error, attempt, "failed to delete temporary rewrite webhook")
+                }
+            }
+        }
+        false
     }
 
     async fn send_reply(&self, ctx: &Context, message: &Message, reply: String) {
@@ -398,10 +442,25 @@ impl Handler {
 fn webhook_identity(message: &Message) -> Option<(String, String)> {
     if message.guild_id.is_none()
         || message.member.is_none()
+        || message.tts
+        || message.mention_everyone
+        || message.pinned
+        || message.webhook_id.is_some()
         || !message.attachments.is_empty()
         || !message.embeds.is_empty()
+        || !message.mention_channels.is_empty()
+        || !message.reactions.is_empty()
         || message.message_reference.is_some()
+        || message.referenced_message.is_some()
+        || !message.message_snapshots.is_empty()
+        || message.activity.is_some()
+        || message.application.is_some()
+        || message.application_id.is_some()
+        || message.interaction_metadata.is_some()
+        || message.thread.is_some()
+        || !message.components.is_empty()
         || message.poll.is_some()
+        || message.position.is_some()
         || !message.sticker_items.is_empty()
     {
         return None;

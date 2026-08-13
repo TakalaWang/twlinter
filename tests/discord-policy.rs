@@ -1,7 +1,8 @@
 #![cfg(feature = "discord")]
 
+use twlinter::core::CoreResult;
 use twlinter::discord_policy::{
-    protected_spans, rewrite_is_safe, rewrite_replacement, rewrite_reply,
+    automatic_replacement, protected_spans, rewrite_is_safe, rewrite_replacement, rewrite_reply,
 };
 use twlinter::llm::RewriteRequest;
 
@@ -44,4 +45,16 @@ fn replacement_is_raw_and_bounded() {
         Some("這是一句話")
     );
     assert!(rewrite_replacement(&"字".repeat(2_000)).is_none());
+}
+
+#[test]
+fn automatic_replacement_rejects_empty_output() {
+    let result = CoreResult {
+        text: String::new(),
+        issues: Vec::new(),
+        applied_fixes: Vec::new(),
+        input_was_simplified: false,
+        changed: true,
+    };
+    assert!(automatic_replacement(&result).is_none());
 }
