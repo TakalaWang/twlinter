@@ -126,8 +126,13 @@ impl EventHandler for Handler {
                 }
             }
 
-            self.send_reply(&ctx, &message, rewrite_reply(&replacement))
-                .await;
+            if message.message_reference.is_some() {
+                self.replace_reply_without_reference(&ctx, &message, replacement)
+                    .await;
+            } else {
+                self.send_reply(&ctx, &message, rewrite_reply(&replacement))
+                    .await;
+            }
         } else if let Some(reply) = automatic_reply(&result) {
             self.send_reply(&ctx, &message, reply).await;
         }
@@ -321,6 +326,34 @@ impl Handler {
             .allowed_mentions(CreateAllowedMentions::new());
         if let Err(error) = message.channel_id.send_message(&ctx.http, outbound).await {
             tracing::warn!(%error, "failed to send Discord reply");
+        }
+    }
+
+    async fn replace_reply_without_reference(
+        &self,
+        ctx: &Context,
+        source: &Message,
+        content: String,
+    ) {
+        let outbound = CreateMessage::new()
+            .content(content)
+            .allowed_mentions(CreateAllowedMentions::new());
+        let sent = match source.channel_id.send_message(&ctx.http, outbound).await {
+            Ok(sent) => sent,
+            Err(error) => {
+                tracing::warn!(%error, "failed to send replacement for Discord reply");
+                return;
+            }
+        };
+
+        if let Err(error) = source.delete(&ctx.http).await {
+            tracing::warn!(%error, "failed to delete original Discord reply");
+            if let Err(cleanup_error) = sent.delete(&ctx.http).await {
+                tracing::error!(
+                    %cleanup_error,
+                    "failed to clean up replacement after original reply deletion failed"
+                );
+            }
         }
     }
 
