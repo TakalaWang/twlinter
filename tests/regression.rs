@@ -288,6 +288,20 @@ fn editorial_corpus_basic_validation() {
 // ---------------------------------------------------------------------------
 
 #[test]
+fn cjk_latin_term_fix_keeps_the_inserted_space() {
+    let (scanner, s2t) = load_scanner();
+    let (fixed, _) = scan_and_fix(
+        &scanner,
+        &s2t,
+        "GitHub軟件",
+        ContentType::Plain,
+        Profile::Base,
+        false,
+    );
+    assert_eq!(fixed, "GitHub 軟體");
+}
+
+#[test]
 fn mixed_content_corpus_basic_validation() {
     let corpus = load_corpus("mixed-content");
     let (scanner, s2t) = load_scanner();
