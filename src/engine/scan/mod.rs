@@ -1480,11 +1480,14 @@ impl Scanner {
         }
 
         // Deterministic output contract: issues are sorted by byte offset
-        // ascending, then severity descending, then rule_type discriminant for
-        // stable, diffable output.
+        // ascending, then zero-length insertions before replacements at the
+        // same offset, then severity and rule type for stable output.  The
+        // insertion-first tie-break lets the fixer handle "GitHub軟件" as
+        // "GitHub 軟體" instead of losing the space after the replacement.
         issues.sort_by(|a, b| {
             a.offset
                 .cmp(&b.offset)
+                .then(a.length.cmp(&b.length))
                 .then(b.severity.cmp(&a.severity))
                 .then(a.rule_type.sort_order().cmp(&b.rule_type.sort_order()))
         });

@@ -23,6 +23,12 @@ use twlinter::rules::ruleset::CaseRule;
 
 const COMMAND_NAME: &str = "twlinter";
 
+fn is_lintable_message(author_is_bot: bool, content: &str, kind: MessageType) -> bool {
+    !author_is_bot
+        && !content.trim().is_empty()
+        && matches!(kind, MessageType::Regular | MessageType::InlineReply)
+}
+
 struct Handler {
     engine: Arc<CoreEngine>,
     gemini: Option<GeminiClient>,
@@ -33,10 +39,7 @@ struct Handler {
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, message: Message) {
-        if message.author.bot
-            || message.content.trim().is_empty()
-            || message.kind != MessageType::Regular
-        {
+        if !is_lintable_message(message.author.bot, &message.content, message.kind) {
             return;
         }
 
@@ -452,4 +455,19 @@ async fn main() -> Result<()> {
         .context("failed to build Discord client")?;
     client.start().await.context("Discord client stopped")?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_lintable_message;
+    use serenity::all::MessageType;
+
+    #[test]
+    fn replies_are_lintable() {
+        assert!(is_lintable_message(
+            false,
+            "需要糾錯",
+            MessageType::InlineReply
+        ));
+    }
 }

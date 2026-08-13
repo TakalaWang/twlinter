@@ -18,7 +18,7 @@
       "id": "amb_render_graphics",
       "repeat": 1,
       "input": "GPU渲染引擎支持即時光線追蹤。",
-      "expected_fixed": "GPU算繪引擎支持即時光線追蹤。",
+      "expected_fixed": "GPU 算繪引擎支持即時光線追蹤。",
       "expected_issues": [
         { "found": "渲染", "replace": "算繪", "rule_type": "cross_strait" }
       ]
