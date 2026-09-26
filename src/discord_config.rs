@@ -224,13 +224,14 @@ impl DiscordLinter {
         }
 
         let features = server.features;
-        let input_was_simplified =
-            features.terminology && detect_chinese_type(text) == ChineseType::Simplified;
-        let normalized_text = if input_was_simplified {
-            self.s2t.convert(text)
-        } else {
-            text.to_owned()
-        };
+        let normalized_text =
+            if features.terminology && detect_chinese_type(text) == ChineseType::Simplified {
+                self.s2t.convert(text)
+            } else {
+                text.to_owned()
+            };
+        // Shared characters such as 「只」 can look simplified without needing conversion.
+        let input_was_simplified = normalized_text != text;
 
         let mut spelling_rules = if features.terminology {
             self.ruleset.spelling_rules.clone()
@@ -412,5 +413,22 @@ mod tests {
             .unwrap();
         assert_eq!(output.output.issues.len(), 1);
         assert_eq!(output.output.issues[0].suggestions[0], "測試用語");
+    }
+
+    #[test]
+    fn shared_characters_are_not_treated_as_simplified() {
+        let linter = DiscordLinter::new().unwrap();
+        let tracked = ChannelConfig { tracking: true };
+        let shared = linter
+            .lint("不只 NIP", &ServerConfig::default(), tracked)
+            .unwrap();
+        assert!(!shared.input_was_simplified);
+        assert!(shared.output.issues.is_empty());
+        assert!(
+            linter
+                .lint("软件", &ServerConfig::default(), tracked)
+                .unwrap()
+                .input_was_simplified
+        );
     }
 }
