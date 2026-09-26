@@ -10,7 +10,7 @@ fallback when Gemini is unavailable or its output fails validation.
 
 1. Create a Discord application and bot, enable the Message Content Intent,
    and invite it with the `bot` and `applications.commands` scopes plus
-   permission to read/send messages, manage messages, and manage webhooks.
+   permission to read and send messages.
 2. Copy `config.example.env`, fill in the tokens, and export the variables.
 3. Start the bot from the repository root:
 
@@ -38,7 +38,5 @@ channel where the bot should operate:
 Simplified-to-Traditional conversion is included in `terminology`. Channels
 only control tracking; every tracked channel in a server uses that server's
 same feature set. Users then write ordinary messages. No rewrite command is
-needed; eligible plain-text messages are replaced through a Webhook when a
-tracked message needs a zh-TW correction. Messages with attachments, embeds,
-reply references, polls, stickers, or missing member identity data keep the
-original message and receive the normal bot reply instead.
+needed; when a tracked message needs a zh-TW correction, the bot replies to
+the original message with the suggested text.
