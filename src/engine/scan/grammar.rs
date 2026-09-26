@@ -3066,7 +3066,7 @@ fn scan_trans_copula_classifier(
                                 abs,
                                 pattern.len(),
                                 pattern,
-                                vec![format!("是")],
+                                vec!["是".to_string()],
                                 IssueType::Translationese,
                                 Severity::Info,
                             )
